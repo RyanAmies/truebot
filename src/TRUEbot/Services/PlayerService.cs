@@ -113,7 +113,8 @@ namespace TRUEbot.Services
 
             if (!string.IsNullOrWhiteSpace(alliance))
             {
-                player.Alliance = alliance.ToUpper();
+                player.Alliance = alliance;
+                player.NormalizedAlliance = alliance.ToUpper();
             }
 
             if (!string.IsNullOrWhiteSpace(location))
@@ -130,7 +131,7 @@ namespace TRUEbot.Services
             var normalized = playerName.ToUpper();
 
             return await _db.Players
-                .Where(x => x.NormalizedName == normalized)
+                .Where(x => x.NormalizedName.Contains(normalized))
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
@@ -146,7 +147,7 @@ namespace TRUEbot.Services
             var normalized = alliance.ToUpper();
 
             return await _db.Players
-                .Where(x => x.Alliance == normalized)
+                .Where(x => x.NormalizedAlliance.Contains(normalized))
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
@@ -162,7 +163,7 @@ namespace TRUEbot.Services
             var normalized = location.ToUpper();
 
             return await _db.Players
-                .Where(x => x.NormalizedLocation == normalized)
+                .Where(x => x.NormalizedLocation.Contains(normalized))
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,

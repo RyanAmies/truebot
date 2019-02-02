@@ -16,6 +16,8 @@ namespace TRUEbot.Data.Models
 
         public string Alliance { get; set; }
 
+        public string NormalizedAlliance { get; set; }
+
         public string Location { get; set; }
 
         public string NormalizedLocation { get; set; }

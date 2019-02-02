@@ -30,7 +30,7 @@ namespace TRUEbot.Modules
             {
                 var players = await _playerService.GetPlayersInAlliance(allianceName);
 
-                if (!EnumerableExtensions.Any(players)) 
+                if (!players.Any()) 
                 {
                     await ReplyAsync("I couldn't find any players in this alliance");
                     return;
@@ -51,7 +51,7 @@ namespace TRUEbot.Modules
             var embed = new EmbedBuilder()
                 .WithTitle(allianceName);
 
-            var output = string.Join(", ", players.Select(x => x.Name));
+            var output = string.Join(", ", players.Select(x => $"{x.Name} ({x.Location ?? "Unknown"})"));
 
             embed.AddField("Players", output);
 

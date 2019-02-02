@@ -72,7 +72,7 @@ namespace TRUEbot.Modules
             var embed = new EmbedBuilder()
                 .WithTitle(location);
 
-            var output = string.Join(", ", players.Select(x => x.Name));
+            var output = string.Join(", ", players.Select(x => $"{x.Name} ({x.Alliance ?? "Unknown"})"));
 
             embed.AddField("Players", output);
 
