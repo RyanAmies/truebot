@@ -110,7 +110,11 @@ namespace TRUEbot.Services
         {
             player.Name = name;
             player.NormalizedName = name.ToUpper();
-            player.Alliance = alliance.ToUpper();
+
+            if (!string.IsNullOrWhiteSpace(alliance))
+            {
+                player.Alliance = alliance.ToUpper();
+            }
 
             if (!string.IsNullOrWhiteSpace(location))
             {
