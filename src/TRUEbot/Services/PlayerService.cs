@@ -31,7 +31,14 @@ namespace TRUEbot.Services
 
         public async Task AddPlayer(string playerName, string alliance, string location)
         {
-            var player = new Player();
+            var normalized = playerName.Replace("`", "'").ToUpper();
+            
+            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+
+            if (player != null)
+                return;
+
+            player = new Player();
 
             player.AddedDate = DateTime.Now;
 
@@ -44,7 +51,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryUpdatePlayerName(string originalPlayerName, string newPlayerName)
         {
-            var normalized = originalPlayerName.ToUpper();
+            var normalized = originalPlayerName.Replace("`", "'").ToUpper();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -60,7 +67,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryUpdatePlayerLocation(string playerName, string location)
         {
-            var normalized = playerName.ToUpper();
+            var normalized = playerName.Replace("`", "'").ToUpper();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -76,7 +83,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryUpdatePlayerAlliance(string playerName, string alliance)
         {
-            var normalized = playerName.ToUpper();
+            var normalized = playerName.Replace("`", "'").ToUpper();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -92,7 +99,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryDeletePlayer(string playerName)
         {
-            var normalized = playerName.ToUpper();
+            var normalized = playerName.Replace("`", "'").ToUpper();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -108,6 +115,10 @@ namespace TRUEbot.Services
 
         private static void UpdatePlayer(Player player, string name, string alliance, string location)
         {
+            alliance = alliance.Replace("`", "'");
+            name = name.Replace("`", "'");
+            location = location.Replace("`", "'");
+
             player.Name = name;
             player.NormalizedName = name.ToUpper();
 
@@ -128,7 +139,7 @@ namespace TRUEbot.Services
 
         public async Task<PlayerDto> GetPlayerByName(string playerName)
         {
-            var normalized = playerName.ToUpper();
+            var normalized = playerName.Replace("`", "'").ToUpper();
 
             return await _db.Players
                 .Where(x => x.NormalizedName.Contains(normalized))
@@ -144,7 +155,7 @@ namespace TRUEbot.Services
 
         public async Task<List<PlayerDto>> GetPlayersInAlliance(string alliance)
         {
-            var normalized = alliance.ToUpper();
+            var normalized = alliance.Replace("`", "'").ToUpper();
 
             return await _db.Players
                 .Where(x => x.NormalizedAlliance.Contains(normalized))
@@ -160,7 +171,7 @@ namespace TRUEbot.Services
 
         public async Task<List<PlayerDto>> GetPlayersInLocation(string location)
         {
-            var normalized = location.ToUpper();
+            var normalized = location.Replace("`", "'").ToUpper();
 
             return await _db.Players
                 .Where(x => x.NormalizedLocation.Contains(normalized))
