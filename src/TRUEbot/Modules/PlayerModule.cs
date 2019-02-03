@@ -64,7 +64,7 @@ namespace TRUEbot.Modules
                     return;
                 }
 
-                await _playerService.AddPlayer(name, alliance, location);
+                await _playerService.AddPlayer(name, alliance, location, Context.User.Username);
 
                 await Context.AddConfirmation();
             }
