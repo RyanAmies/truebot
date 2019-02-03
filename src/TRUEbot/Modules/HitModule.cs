@@ -16,10 +16,12 @@ namespace TRUEbot.Modules
     public class HitModule : ModuleBase
     {
         private readonly IPlayerService _playerService;
+        private readonly IHitService _hitService;
 
-        public HitModule(IPlayerService playerService)
+        public HitModule(IPlayerService playerService, IHitService hitService)
         {
             _playerService = playerService;
+            _hitService = hitService;
         }
 
         [Command("add"), Summary("Marks a player as needing to be hit")]
@@ -47,7 +49,7 @@ namespace TRUEbot.Modules
                     return;
                 }
 
-                var success = await _playerService.AddHitToPlayer(playerName, Context.User.Username, reason);
+                var success = await _hitService.AddHitToPlayer(playerName, Context.User.Username, reason);
 
                 if (success)
                     await Context.AddConfirmation();
@@ -69,7 +71,7 @@ namespace TRUEbot.Modules
             {
 
 
-                var hits = await _playerService.GetOutstandingHits();
+                var hits = await _hitService.GetOutstandingHits();
 
                 if (hits.Any() == false)
                 {
@@ -107,7 +109,7 @@ namespace TRUEbot.Modules
                     return;
                 }
 
-                var success = await _playerService.CompleteHitOnPlayer(playerName, Context.User.Username);
+                var success = await _hitService.CompleteHitOnPlayer(playerName, Context.User.Username);
 
                 if (success)
                     await Context.AddConfirmation();
@@ -131,7 +133,7 @@ namespace TRUEbot.Modules
         {
             try
             {
-                var hits = await _playerService.GetHitsCompletedByUserAsync(username);
+                var hits = await _hitService.GetHitsCompletedByUserAsync(username);
 
                 if (!hits.Any()) 
                 {

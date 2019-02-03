@@ -41,6 +41,7 @@ namespace TRUEbot
             _serviceCollection.AddDbContext<EntityContext>();
 
             _serviceCollection.AddScoped<IPlayerService, PlayerService>();
+            _serviceCollection.AddScoped<IHitService, HitService>();
 
             _discordClient = CreateDiscordClient();
 

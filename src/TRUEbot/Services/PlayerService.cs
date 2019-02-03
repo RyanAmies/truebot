@@ -21,13 +21,10 @@ namespace TRUEbot.Services
         Task<bool> TryUpdatePlayerAlliance(string playerName, string alliance);
         Task<bool> TryDeletePlayer(string playerName);
 
-        Task<bool> AddHitToPlayer(string playerName, string orderedBy, string reason);
-        Task<bool> CompleteHitOnPlayer(string playerName, string completedBy);
-        Task<List<HitDto>> GetOutstandingHits();
-
-        Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string playerName);
-        Task<List<HitDto>> GetHitsCompletedByUserAsync(string username);
+       Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string playerName);
         Task<bool> TryUpdateAllianceName(string originalAllianceName, string newAllianceName);
+        
+        Task<List<PlayerDto>> GetAllPlayersAsync();
     }
 
     public class PlayerService : IPlayerService
@@ -77,8 +74,7 @@ namespace TRUEbot.Services
 
             return true;
         }
-
-
+        
         public async Task<bool> TryUpdateLocationName(string originalLocationName, string newLocation)
         {
             var normalized = originalLocationName.Normalise();
@@ -94,6 +90,7 @@ namespace TRUEbot.Services
 
             return true;
         } 
+
         public async Task<bool> TryUpdateAllianceName(string originalAllianceName, string newAllianceName)
         {
             var normalized = originalAllianceName.Normalise();
@@ -108,6 +105,19 @@ namespace TRUEbot.Services
             await _db.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<List<PlayerDto>> GetAllPlayersAsync()
+        {
+            return await _db.Players
+                .Select(x => new PlayerDto
+                {
+                    Name = x.Name,
+                    Location = x.Location,
+                    Alliance = x.Alliance,
+                    AddedDate = x.AddedDate,
+                    UpdatedDate = x.UpdatedDate,
+                }).ToListAsync();
         }
 
         public async Task<bool> TryUpdatePlayerLocation(string playerName, string location)
@@ -158,64 +168,6 @@ namespace TRUEbot.Services
             return true;
         }
 
-        public async Task<bool> AddHitToPlayer(string playerName, string orderedBy, string reason)
-        {
-            var normalized = playerName.Normalise();
-
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
-
-            if (player == null)
-                return false;
-
-            var hit = await _db.Hits.Where(a=>a.CompletedOn == null).FirstOrDefaultAsync(x => x.PlayerId == player.Id);
-            if (hit != null)
-                return true;
-
-            hit = new Hit();
-
-            hit.PlayerId = player.Id;
-            hit.OrderedBy = orderedBy;
-            hit.OrderedOn = DateTime.Now;
-            hit.Reason = reason;
-
-            _db.Hits.Add(hit);
-
-            await _db.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async Task<bool> CompleteHitOnPlayer(string playerName, string completedBy)
-        {
-            var normalized = playerName.Normalise();
-
-            var hit = await _db.Hits.Where(a=>a.CompletedOn == null).FirstOrDefaultAsync(x => x.Player.NormalizedName == normalized);
-            if (hit == null)
-                return false;
-
-            hit.CompletedOn = DateTime.Now;
-            hit.CompletedBy = completedBy;
-
-            await _db.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async Task<List<HitDto>> GetOutstandingHits()
-        {
-            var hits = await _db.Hits.Where(x => x.CompletedOn == null).Select(x => new HitDto
-            {
-                Reason = x.Reason,
-                Name = x.Player.Name,
-                OrderedOn = x.OrderedOn,
-                Alliance = x.Player.Alliance,
-                Location = x.Player.Location,
-                OrderedBy = x.OrderedBy
-            }).ToListAsync();
-
-            return hits;
-
-        }
 
         public async Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string reportedBy)
         {
@@ -231,22 +183,7 @@ namespace TRUEbot.Services
                 }).ToListAsync();
         }
 
-        public async Task<List<HitDto>> GetHitsCompletedByUserAsync(string username)
-        {
-            return await _db.Hits
-                .Where(x => x.CompletedBy == username)
-                .Select(x => new HitDto
-                {
-                    Reason = x.Reason,
-                    Name = x.Player.Name,
-                    OrderedOn = x.OrderedOn,
-                    Alliance = x.Player.Alliance,
-                    Location = x.Player.Location,
-                    OrderedBy = x.OrderedBy,
-                    CompletedOn = x.CompletedOn
-                }).ToListAsync();
-        }
-
+       
 
         private static void UpdatePlayer(Player player, string name, string alliance, string location)
         {
@@ -339,14 +276,5 @@ namespace TRUEbot.Services
         public DateTime UpdatedDate { get; set; }
     }
 
-    public class HitDto
-    {
-        public string Name { get; set; }
-        public string Location { get; set; }
-        public string Alliance { get; set; }
-        public DateTime OrderedOn { get; set; }
-        public string OrderedBy { get; set; }
-        public string Reason { get; set; }
-        public DateTime? CompletedOn { get; set; }
-    }
+   
 }

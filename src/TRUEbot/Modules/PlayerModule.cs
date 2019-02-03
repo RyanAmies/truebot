@@ -9,7 +9,7 @@ using TRUEbot.Services;
 
 namespace TRUEbot.Modules
 {
-    [Group("player")]
+    [Group("player"), Alias("p")]
     [UsedImplicitly]
     public class PlayerModule : ModuleBase
     {
