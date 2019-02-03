@@ -25,5 +25,7 @@ namespace TRUEbot.Data.Models
         public DateTime AddedDate { get; set; }
 
         public DateTime UpdatedDate { get; set; }
+
+        public string AddedBy { get; set; }
     }
 }

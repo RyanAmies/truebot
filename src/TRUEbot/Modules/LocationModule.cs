@@ -45,6 +45,59 @@ namespace TRUEbot.Modules
             }
         }
 
+        [Command("rename"), Summary("Renames a player")]
+        [UsedImplicitly]
+        public async Task Rename(string originalName, string newName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(originalName) || string.IsNullOrWhiteSpace(newName))
+                {
+                    await ReplyAsync("Enter a name before renaming a location!");
+                    return;
+                }
+
+                var response = await _playerService.TryUpdateLocationName(originalName, newName);
+
+                if (response)
+                {
+                    await Context.AddConfirmation();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed renaming location {name} to new name: {newName}", originalName, newName);
+            }
+        }
+        
+        [Command("stats"), Summary("Gets the number of players a user has reported")]
+        [UsedImplicitly]
+        public Task Stats() => Stats(Context.User.Username);
+
+        [Command("stats"), Summary("Gets the number of players a user has reported")]
+        [UsedImplicitly]
+        public async Task Stats(string username)
+        {
+            try
+            {
+                var players = await _playerService.GetPlayersReportedByUserAsync(username);
+
+                if (!players.Any()) 
+                {
+                    await ReplyAsync($"{username} hasn't reported any players yet");
+                    return;
+                }
+
+                var locationEmbed = BuildEmbed(username, players);
+
+                await ReplyAsync(embed: locationEmbed.Build());
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed getting reported players for user {username}", username);
+            }
+        }
+
         [Command("spot"), Summary("Spots players and updates their location")]
         [UsedImplicitly]
         public async Task Get(string playerName, string location)
