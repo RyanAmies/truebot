@@ -196,7 +196,7 @@ namespace TRUEbot.Services
             {
                 alliance = alliance.UnifyApostrophe();
 
-                player.Alliance = alliance;
+                player.Alliance = alliance.ToUpperInvariant();
                 player.NormalizedAlliance = alliance.Normalise();
             }
 

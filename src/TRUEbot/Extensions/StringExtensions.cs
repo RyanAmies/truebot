@@ -18,7 +18,8 @@
 
         public static string UnifyApostrophe(this string text)
         {
-            return text.Replace("`", "'").Replace("’", "'");
+            return text.Replace("‘", "'").Replace("’", "'").Replace("`", "'").Replace("'", "'");
         }
     }
 }
+
