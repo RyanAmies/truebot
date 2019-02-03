@@ -7,8 +7,18 @@
             if (string.IsNullOrEmpty(value))
                 return value;
 
-            return value.Length <= maxLength 
+            return value.Length <= maxLength
                 ? value : withEllipsis ? value.Substring(0, maxLength - 3) + "..." : value.Substring(0, maxLength);
+        }
+
+        public static string Normalise(this string text)
+        {
+            return text.UnifyApostrophe().ToUpper();
+        }
+
+        public static string UnifyApostrophe(this string text)
+        {
+            return text.Replace("`", "'").Replace("’", "'");
         }
     }
 }

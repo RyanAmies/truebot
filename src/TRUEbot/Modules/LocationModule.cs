@@ -45,7 +45,7 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("rename"), Summary("Renames a player")]
+        [Command("rename"), Summary("Renames a location")]
         [UsedImplicitly]
         public async Task Rename(string originalName, string newName)
         {

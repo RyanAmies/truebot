@@ -7,6 +7,8 @@ using Discord.Commands;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Internal;
 using Serilog;
+using Serilog;
+using TRUEbot.Extensions;
 using TRUEbot.Services;
 
 namespace TRUEbot.Modules
@@ -43,6 +45,31 @@ namespace TRUEbot.Modules
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed getting players in alliance {name}", allianceName);
+            }
+        }
+
+        [Command("rename"), Summary("Renames an alliance")]
+        [UsedImplicitly]
+        public async Task Rename(string originalName, string newName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(originalName) || string.IsNullOrWhiteSpace(newName))
+                {
+                    await ReplyAsync("Enter a name before renaming an alliance!");
+                    return;
+                }
+
+                var response = await _playerService.TryUpdateAllianceName(originalName, newName);
+
+                if (response)
+                {
+                    await Context.AddConfirmation();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed renaming alliance {name} to new name: {newName}", originalName, newName);
             }
         }
 

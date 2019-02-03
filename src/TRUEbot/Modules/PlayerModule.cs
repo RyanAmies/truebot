@@ -64,9 +64,13 @@ namespace TRUEbot.Modules
                     return;
                 }
 
-                await _playerService.AddPlayer(name, alliance, location, Context.User.Username);
+                var result = await _playerService.AddPlayer(name, alliance, location, Context.User.Username);
 
-                await Context.AddConfirmation();
+                if (result == PlayerCreationResult.OK)
+                    await Context.AddConfirmation();
+                else
+                    await ReplyAsync("Player already exists please use `assign` to change alliance or `spot` to change location");
+
             }
             catch (Exception ex)
             {
@@ -168,7 +172,7 @@ namespace TRUEbot.Modules
         private static EmbedBuilder BuildEmbed(PlayerDto player)
         {
             var embed = new EmbedBuilder()
-                .WithAuthor(x =>x.WithName(player.Name));
+                .WithAuthor(x => x.WithName(player.Name));
 
             embed.AddField("Alliance", player.Alliance ?? "Unknown");
 

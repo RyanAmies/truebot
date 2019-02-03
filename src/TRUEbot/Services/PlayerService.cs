@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TRUEbot.Data;
 using TRUEbot.Data.Models;
+using TRUEbot.Extensions;
 
 namespace TRUEbot.Services
 {
     public interface IPlayerService
     {
-        Task AddPlayer(string playerName, string alliance, string location, string addedByUsername);
+        Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location, string addedByUsername);
         Task<PlayerDto> GetPlayerByName(string playerName);
         Task<List<PlayerDto>> GetPlayersInAlliance(string alliance);
         Task<List<PlayerDto>> GetPlayersInLocation(string location);
@@ -19,11 +20,14 @@ namespace TRUEbot.Services
         Task<bool> TryUpdatePlayerLocation(string playerName, string location);
         Task<bool> TryUpdatePlayerAlliance(string playerName, string alliance);
         Task<bool> TryDeletePlayer(string playerName);
+
         Task<bool> AddHitToPlayer(string playerName, string orderedBy, string reason);
         Task<bool> CompleteHitOnPlayer(string playerName, string completedBy);
         Task<List<HitDto>> GetOutstandingHits();
+
         Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string playerName);
         Task<List<HitDto>> GetHitsCompletedByUserAsync(string username);
+        Task<bool> TryUpdateAllianceName(string originalAllianceName, string newAllianceName);
     }
 
     public class PlayerService : IPlayerService
@@ -34,15 +38,15 @@ namespace TRUEbot.Services
         {
             _db = db;
         }
-
-        public async Task AddPlayer(string playerName, string alliance, string location, string addedByUsername)
+        
+        public async Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location, string addedByUsername)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.Normalise();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player != null)
-                return;
+                return PlayerCreationResult.Duplicate;
 
             player = new Player();
 
@@ -54,11 +58,13 @@ namespace TRUEbot.Services
             UpdatePlayer(player, playerName, alliance, location);
 
             await _db.SaveChangesAsync();
+
+            return PlayerCreationResult.OK;
         }
 
         public async Task<bool> TryUpdatePlayerName(string originalPlayerName, string newPlayerName)
         {
-            var normalized = originalPlayerName.Replace("`", "'").ToUpper();
+            var normalized = originalPlayerName.Normalise();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -75,9 +81,9 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryUpdateLocationName(string originalLocationName, string newLocation)
         {
-            var normalized = originalLocationName.Replace("`", "'").ToUpper();
+            var normalized = originalLocationName.Normalise();
 
-            var players = await _db.Players.Where(x => x.NormalizedName == normalized).ToListAsync();
+            var players = await _db.Players.Where(x => x.NormalizedLocation == normalized|| x.Location == originalLocationName).ToListAsync();
 
             foreach (var player in players)
             {
@@ -87,11 +93,26 @@ namespace TRUEbot.Services
             await _db.SaveChangesAsync();
 
             return true;
+        } 
+        public async Task<bool> TryUpdateAllianceName(string originalAllianceName, string newAllianceName)
+        {
+            var normalized = originalAllianceName.Normalise();
+
+            var players = await _db.Players.Where(x => x.NormalizedAlliance == normalized || x.Alliance == originalAllianceName).ToListAsync();
+
+            foreach (var player in players)
+            {
+                UpdatePlayer(player, player.Name, newAllianceName, player.Location);
+            }
+
+            await _db.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> TryUpdatePlayerLocation(string playerName, string location)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.Normalise();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -107,7 +128,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryUpdatePlayerAlliance(string playerName, string alliance)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.Normalise();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -123,7 +144,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> TryDeletePlayer(string playerName)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.Normalise();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -139,7 +160,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> AddHitToPlayer(string playerName, string orderedBy, string reason)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.Normalise();
 
             var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
@@ -166,7 +187,7 @@ namespace TRUEbot.Services
 
         public async Task<bool> CompleteHitOnPlayer(string playerName, string completedBy)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.Normalise();
 
             var hit = await _db.Hits.Where(a=>a.CompletedOn == null).FirstOrDefaultAsync(x => x.Player.NormalizedName == normalized);
             if (hit == null)
@@ -229,26 +250,26 @@ namespace TRUEbot.Services
 
         private static void UpdatePlayer(Player player, string name, string alliance, string location)
         {
-            name = name.Replace("`", "'");
+            name = name.UnifyApostrophe();
 
             player.Name = name;
-            player.NormalizedName = name.ToUpper();
+            player.NormalizedName = name.Normalise();
 
             if (!string.IsNullOrWhiteSpace(alliance))
             {
-                alliance = alliance.Replace("`", "'");
+                alliance = alliance.UnifyApostrophe();
 
                 player.Alliance = alliance;
-                player.NormalizedAlliance = alliance.ToUpper();
+                player.NormalizedAlliance = alliance.Normalise();
             }
 
             if (!string.IsNullOrWhiteSpace(location))
             {
-                location = location.Replace("`", "'");
+                location = location.UnifyApostrophe();
 
 
                 player.Location = location;
-                player.NormalizedLocation = location.ToUpper();
+                player.NormalizedLocation = location.Normalise();
             }
 
             player.UpdatedDate = DateTime.Now;
@@ -256,7 +277,7 @@ namespace TRUEbot.Services
 
         public async Task<PlayerDto> GetPlayerByName(string playerName)
         {
-            var normalized = playerName.Replace("`", "'").ToUpper();
+            var normalized = playerName.UnifyApostrophe().ToUpper();
 
             return await _db.Players
                 .Where(x => x.NormalizedName.Contains(normalized))
@@ -272,7 +293,7 @@ namespace TRUEbot.Services
 
         public async Task<List<PlayerDto>> GetPlayersInAlliance(string alliance)
         {
-            var normalized = alliance.Replace("`", "'").ToUpper();
+            var normalized = alliance.Normalise();
 
             return await _db.Players
                 .Where(x => x.NormalizedAlliance.Contains(normalized))
@@ -288,7 +309,7 @@ namespace TRUEbot.Services
 
         public async Task<List<PlayerDto>> GetPlayersInLocation(string location)
         {
-            var normalized = location.Replace("`", "'").ToUpper();
+            var normalized = location.Normalise();
 
             return await _db.Players
                 .Where(x => x.NormalizedLocation.Contains(normalized))
@@ -301,6 +322,12 @@ namespace TRUEbot.Services
                     UpdatedDate = x.UpdatedDate,
                 }).ToListAsync();
         }
+    }
+
+    public enum PlayerCreationResult
+    {
+        OK,
+        Duplicate
     }
 
     public class PlayerDto
