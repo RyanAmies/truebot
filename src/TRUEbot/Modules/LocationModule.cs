@@ -71,19 +71,52 @@ namespace TRUEbot.Modules
             }
         }
        
-
-        private static EmbedBuilder BuildEmbed(string location, List<PlayerDto> players)
+        private static List<EmbedBuilder> BuildEmbed(string location, List<PlayerDto> players)
         {
-            var embed = new EmbedBuilder()
-                .WithTitle(location);
+            const int LIMIT = 1020;
 
-            var output = string.Join(Environment.NewLine, players.OrderBy(a=>a.Name).Select(x => $"{x.Name} ({x.Alliance ?? "Unknown"})"));
+            var pageText = "";
+            var builders = new List<EmbedBuilder>();
 
-            embed.AddField("Players", output);
+            foreach (var playerText in players.OrderBy(a => a.Name).Select(x => $"{x.Name} [{x.Alliance ?? "Unknown"}]"))
+            {
+                if (pageText.Length + playerText.Length > LIMIT)
+                {
+                    var embed = new EmbedBuilder()
+                        .WithTitle($"Players in {location} Page ");
+         
+                    embed.AddField("Players", pageText);
 
-            embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
+                    embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
 
-            return embed;
+                    builders.Add(embed);
+
+                    pageText = "";
+                }
+                else
+                {
+                    pageText += Environment.NewLine + playerText;
+                }
+            }
+
+            var finalEmbed = new EmbedBuilder()
+                .WithTitle($"Players in {location} Page ");
+         
+            finalEmbed.AddField("Players", pageText);
+
+            finalEmbed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
+            
+            builders.Add(finalEmbed);
+
+            var page = 1;
+            var pages = builders.Count;
+
+            foreach (var embedBuilder in builders)
+            {
+                embedBuilder.Title += $"{page} of {pages}";
+            }
+         
+            return builders;
         }
     }
 }
