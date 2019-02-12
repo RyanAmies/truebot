@@ -11,7 +11,8 @@ namespace TRUEbot.Services
 {
     public interface IPlayerService
     {
-        Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location, string addedByUsername);
+        Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location,
+            string addedByUsername, int? level);
         Task<PlayerDto> GetPlayerByName(string playerName);
         Task<List<PlayerDto>> GetPlayersInAlliance(string alliance);
         Task<List<PlayerDto>> GetPlayersInLocation(string location);
@@ -25,6 +26,7 @@ namespace TRUEbot.Services
 
         Task<List<PlayerDto>> GetAllPlayersAsync();
         Task<bool> NormaliseSystemNames();
+        Task<UpdatePlayerResult> TryUpdatePlayerLevel(string playerName, int level);
     }
 
     public class PlayerService : IPlayerService
@@ -36,7 +38,7 @@ namespace TRUEbot.Services
             _db = db;
         }
 
-        public async Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location, string addedByUsername)
+        public async Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location,string addedByUsername, int? level)
         {
             var normalized = playerName.Normalise();
 
@@ -63,7 +65,7 @@ namespace TRUEbot.Services
                     return PlayerCreationResult.CantFindSystem;
             }
 
-            UpdatePlayer(player, playerName, alliance, system);
+            UpdatePlayer(player, playerName, alliance, system,level);
 
             await _db.SaveChangesAsync();
 
@@ -79,7 +81,7 @@ namespace TRUEbot.Services
             if (player == null)
                 return UpdatePlayerResult.CantFindPlayer;
 
-            UpdatePlayer(player, newPlayerName, player.Alliance, player.System);
+            UpdatePlayer(player, newPlayerName, player.Alliance, player.System, player.Level);
 
             await _db.SaveChangesAsync();
 
@@ -99,7 +101,7 @@ namespace TRUEbot.Services
 
             foreach (var player in players)
             {
-                UpdatePlayer(player, player.Name, newAllianceName, player.System);
+                UpdatePlayer(player, player.Name, newAllianceName, player.System, player.Level);
             }
 
             await _db.SaveChangesAsync();
@@ -135,6 +137,22 @@ namespace TRUEbot.Services
             return true;
         }
 
+        public async Task<UpdatePlayerResult> TryUpdatePlayerLevel(string playerName, int level)
+        {
+            var normalized = playerName.Normalise();
+
+            var player = await _db.Players.Include(a => a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+
+            if (player == null)
+                return UpdatePlayerResult.CantFindPlayer;
+
+            UpdatePlayer(player, player.Name, player.Alliance, player.System, level);
+
+            await _db.SaveChangesAsync();
+
+            return UpdatePlayerResult.OK;
+        }
+
         public async Task<UpdatePlayerResult> TryUpdatePlayerLocation(string playerName, string location)
         {
             var normalized = playerName.Normalise();
@@ -155,7 +173,7 @@ namespace TRUEbot.Services
                     return UpdatePlayerResult.CantFindSystem;
             }
 
-            UpdatePlayer(player, player.Name, player.Alliance, system);
+            UpdatePlayer(player, player.Name, player.Alliance, system, player.Level);
 
             await _db.SaveChangesAsync();
 
@@ -171,7 +189,7 @@ namespace TRUEbot.Services
             if (player == null)
                 return UpdatePlayerResult.CantFindPlayer;
 
-            UpdatePlayer(player, player.Name, alliance, player.System);
+            UpdatePlayer(player, player.Name, alliance, player.System, player.Level);
 
             await _db.SaveChangesAsync();
 
@@ -214,12 +232,13 @@ namespace TRUEbot.Services
 
 
 
-        private static void UpdatePlayer(Player player, string name, string alliance, Data.Models.System system)
+        private static void UpdatePlayer(Player player, string name, string alliance, Data.Models.System system, int? level)
         {
             name = name.UnifyApostrophe();
 
             player.Name = name;
             player.NormalizedName = name.Normalise();
+            player.Level = level;
 
             if (!string.IsNullOrWhiteSpace(alliance))
             {
@@ -253,6 +272,7 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
+                    PlayerLevel = x.Level,
                     Location = x.SystemId != null ? x.System.Name : null,
                     LocationFaction = x.SystemId != null ? x.System.Faction : null,
                     LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
@@ -278,6 +298,7 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
+                    PlayerLevel = x.Level,
                     Location = x.SystemId != null ? x.System.Name : null,
                     LocationFaction = x.SystemId != null ? x.System.Faction : null,
                     LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
@@ -296,6 +317,7 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
+                    PlayerLevel = x.Level,
                     Location = x.SystemId != null ? x.System.Name : null,
                     LocationFaction = x.SystemId != null ? x.System.Faction : null,
                     LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
@@ -333,6 +355,7 @@ namespace TRUEbot.Services
         public string Location { get; set; }
         public string LocationFaction { get; set; }
         public int? LocationLevel { get; set; }
+        public int? PlayerLevel { get; set; }
         public string Alliance { get; set; }
         public DateTime AddedDate { get; set; }
         public DateTime UpdatedDate { get; set; }

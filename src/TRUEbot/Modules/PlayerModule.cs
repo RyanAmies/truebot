@@ -47,15 +47,15 @@ namespace TRUEbot.Modules
 
         [Command("add"), Summary("Adds a player with name")]
         [UsedImplicitly]
-        public Task Add(string name) => Add(name, null, null);
+        public Task Add(string name) => Add(name, null, null,null);
 
         [Command("add"), Summary("Adds a player with name, alliance")]
         [UsedImplicitly]
-        public Task Add(string name, string alliance) => Add(name, alliance, null);
+        public Task Add(string name, string alliance) => Add(name, alliance, null,null);
 
         [Command("add"), Summary("Adds a player with name, alliance and location")]
         [UsedImplicitly]
-        public async Task Add(string name, string alliance, string location)
+        public async Task Add(string name, string alliance, string location, int? level)
         {
             try
             {
@@ -65,7 +65,7 @@ namespace TRUEbot.Modules
                     return;
                 }
 
-                var result = await _playerService.AddPlayer(name, alliance, location, Context.User.Username);
+                var result = await _playerService.AddPlayer(name, alliance, location, Context.User.Username, level);
 
                 if (result == PlayerCreationResult.OK)
                     await Context.AddConfirmation();
@@ -137,6 +137,38 @@ namespace TRUEbot.Modules
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed assigning player {name} to new alliance: {alliance}", playerName, alliance);
+            }
+        }
+
+        [Command("level"), Summary("Assigns a player to a level")]
+        [UsedImplicitly]
+        public async Task Assign(string playerName, int level)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(playerName))
+                {
+                    await ReplyAsync("Enter a player name");
+                    return;
+                }
+
+                var response = await _playerService.TryUpdatePlayerLevel(playerName, level);
+
+                switch (response)
+                {
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed setting level for player {name}", playerName);
             }
         }
 
@@ -259,6 +291,8 @@ namespace TRUEbot.Modules
             embed.AddField("Alliance", player.Alliance ?? "Unknown");
 
             embed.AddField("Location", player.Location == null ?"Unknown": $"{player.Location} ({player.LocationLevel}) - {player.LocationFaction}" );
+
+            embed.AddField("Level", player.PlayerLevel != null ?player.PlayerLevel.Value.ToString(): "Unknown");
 
             if (player.SystemLogs.Any())
             {

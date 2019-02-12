@@ -92,7 +92,10 @@ namespace TRUEbot.Modules
 
             foreach (var x in players.OrderBy(a => a.Name))
             {
-                var text = $"{x.Name} in ";
+                var text = $"{x.Name} ";
+                if (x.PlayerLevel != null)
+                    text += $"({x.PlayerLevel}) ";
+                text += "in ";
                 if (x.Location == null)
                     text += "Unknown";
                 else
@@ -103,10 +106,10 @@ namespace TRUEbot.Modules
                     var embed = new EmbedBuilder()
                         .WithTitle($"{allianceName} Players Page ");
 
-                        embed.AddField("Players", pageText);
-                    
+                    embed.AddField("Players", pageText);
+
                     embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
-                    
+
 
                     builders.Add(embed);
 
@@ -122,7 +125,7 @@ namespace TRUEbot.Modules
             var finalEmbed = new EmbedBuilder()
                 .WithTitle($"{allianceName} Players Page ");
 
-                finalEmbed.AddField("Players", pageText);
+            finalEmbed.AddField("Players", pageText);
 
             finalEmbed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
 

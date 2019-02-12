@@ -64,6 +64,10 @@ namespace TRUEbot.Modules
             {
                 var text = (player.Alliance == null ? "" : $"[{player.Alliance}] ") + player.Name;
 
+                if (player.PlayerLevel != null)
+                    text += $"({player.PlayerLevel})";
+                
+
                 if (pageText.Length + text.Length > LIMIT)
                 {
                     var embed = new EmbedBuilder()

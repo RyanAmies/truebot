@@ -150,48 +150,7 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("add"), Summary("Adds a player with name")]
-        [UsedImplicitly]
-        public Task Add(string name) => Add(name, null, null);
-
-        [Command("add"), Summary("Adds a player with name, alliance")]
-        [UsedImplicitly]
-        public Task Add(string name, string alliance) => Add(name, alliance, null);
-
-        [Command("add"), Summary("Adds a player with name, alliance and location")]
-        [UsedImplicitly]
-        public async Task Add(string name, string alliance, string location)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    await ReplyAsync("Enter a name before adding a player!");
-                    return;
-                }
-
-                var result = await _playerService.AddPlayer(name, alliance, location, Context.User.Username);
-
-                switch (result)
-                {
-                    case PlayerCreationResult.OK:
-                        await Context.AddConfirmation();
-                        break;
-                    case PlayerCreationResult.CantFindSystem:
-                        await ReplyAsync("Could not find the defined system");
-                        break;
-                    default:
-                        await ReplyAsync("Player already exists please use `assign` to change alliance or `spot` to change location");
-                        break;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed getting player by name {name}", name);
-            }
-        }
-        
+      
 
         [Command("all"), Summary("PM's user with all the users in the database")]
         [UsedImplicitly]
