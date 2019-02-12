@@ -40,7 +40,7 @@ namespace TRUEbot.Services
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a => a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player != null)
                 return PlayerCreationResult.Duplicate;
@@ -74,7 +74,7 @@ namespace TRUEbot.Services
         {
             var normalized = originalPlayerName.Normalise();
 
-            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a => a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
                 return UpdatePlayerResult.CantFindPlayer;
@@ -92,7 +92,7 @@ namespace TRUEbot.Services
         {
             var normalized = originalAllianceName.Normalise();
 
-            var players = await _db.Players.Include(a=>a.System).Where(x => x.NormalizedAlliance == normalized || x.Alliance == originalAllianceName).ToListAsync();
+            var players = await _db.Players.Include(a => a.System).Where(x => x.NormalizedAlliance == normalized || x.Alliance == originalAllianceName).ToListAsync();
 
             if (players.Any() == false)
                 return UpdatePlayerResult.CantFindPlayer;
@@ -139,7 +139,7 @@ namespace TRUEbot.Services
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a => a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
                 return UpdatePlayerResult.CantFindPlayer;
@@ -166,7 +166,7 @@ namespace TRUEbot.Services
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a => a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
                 return UpdatePlayerResult.CantFindPlayer;
@@ -182,7 +182,7 @@ namespace TRUEbot.Services
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a => a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
                 return UpdatePlayerResult.CantFindPlayer;
@@ -229,6 +229,16 @@ namespace TRUEbot.Services
                 player.NormalizedAlliance = alliance.Normalise();
             }
 
+            if (system != player.System && system != null)
+            {
+                player.SystemLogs.Add(new SystemLog
+                {
+                    Player = player,
+                    System = system,
+                    DateUpdated = DateTime.Now
+                });
+            }
+
             player.System = system;
 
             player.UpdatedDate = DateTime.Now;
@@ -249,6 +259,13 @@ namespace TRUEbot.Services
                     Alliance = x.Alliance,
                     AddedDate = x.AddedDate,
                     UpdatedDate = x.UpdatedDate,
+                    SystemLogs = x.SystemLogs.Select(s=>new SystemLogDto
+                    {
+                        DateUpdated = s.DateUpdated,
+                        SystemName = s.System.Name,
+                        SystemFaction = s.System.Faction,
+                        SystemLevel = s.System.Level,
+                    }).ToList()
                 }).FirstOrDefaultAsync();
         }
 
@@ -289,6 +306,14 @@ namespace TRUEbot.Services
         }
     }
 
+    public class SystemLogDto
+    {
+        public DateTime DateUpdated { get; set; }
+        public string SystemFaction { get; set; }
+        public string SystemName { get; set; }
+        public int SystemLevel { get; set; }
+    }
+
     public enum PlayerCreationResult
     {
         OK,
@@ -311,6 +336,7 @@ namespace TRUEbot.Services
         public string Alliance { get; set; }
         public DateTime AddedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
+        public List<SystemLogDto> SystemLogs { get; set; } = new List<SystemLogDto>();
     }
 
 

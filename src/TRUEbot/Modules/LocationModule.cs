@@ -21,7 +21,6 @@ namespace TRUEbot.Modules
         {
             _playerService = playerService;
         }
-
        
         [Command, Summary("Gets all players in the location")]
         [UsedImplicitly]
@@ -49,11 +48,6 @@ namespace TRUEbot.Modules
                 Log.Error(ex, "Failed getting players in location {name}", location);
             }
         }
-
-
-
-
-
 
         private static List<EmbedBuilder> BuildEmbed(List<PlayerDto> players)
         {

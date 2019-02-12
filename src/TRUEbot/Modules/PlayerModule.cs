@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -258,6 +259,14 @@ namespace TRUEbot.Modules
             embed.AddField("Alliance", player.Alliance ?? "Unknown");
 
             embed.AddField("Location", player.Location == null ?"Unknown": $"{player.Location} ({player.LocationLevel}) - {player.LocationFaction}" );
+
+            if (player.SystemLogs.Any())
+            {
+                var locationLogs = player.SystemLogs.OrderByDescending(a=>a.DateUpdated).Select(s =>
+                        $"{s.SystemName} ({s.SystemLevel}) - {s.SystemFaction} on {s.DateUpdated:dd/MM/yy HH:mm}"+Environment.NewLine).ToList();
+                embed.AddField("Previous Locations", string.Join("",locationLogs));
+
+            }
 
             embed.WithFooter(GetPostedMeta(player)).WithColor(new Color(95, 186, 125));
 
