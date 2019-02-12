@@ -11,7 +11,7 @@ using TRUEbot.Services;
 
 namespace TRUEbot.Modules
 {
-    [Group("location"), Alias("sys","systems","system","l")]
+    [Group("location"), Alias("sys", "systems", "system", "l")]
     [UsedImplicitly]
     public class LocationModule : ModuleBase
     {
@@ -22,7 +22,8 @@ namespace TRUEbot.Modules
             _playerService = playerService;
         }
 
-        [Command,Summary("Gets all players in the location")]
+       
+        [Command, Summary("Gets all players in the location")]
         [UsedImplicitly]
         public async Task Get(string location)
         {
@@ -30,15 +31,18 @@ namespace TRUEbot.Modules
             {
                 var players = await _playerService.GetPlayersInLocation(location);
 
-                if (!players.Any()) 
+                if (!players.Any())
                 {
                     await ReplyAsync("I couldn't find any players in this location");
                     return;
                 }
 
-                var locationEmbed = BuildEmbed(location, players);
+                var locationEmbed = BuildEmbed(players);
 
-                await ReplyAsync(embed: locationEmbed.Build());
+                foreach (var embed in locationEmbed)
+                {
+                    await ReplyAsync(embed: embed.Build());
+                }
             }
             catch (Exception ex)
             {
@@ -46,46 +50,33 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("rename"), Summary("Renames a location")]
-        [UsedImplicitly]
-        public async Task Rename(string originalName, string newName)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(originalName) || string.IsNullOrWhiteSpace(newName))
-                {
-                    await ReplyAsync("Enter a name before renaming a location!");
-                    return;
-                }
 
-                var response = await _playerService.TryUpdateLocationName(originalName, newName);
 
-                if (response)
-                {
-                    await Context.AddConfirmation();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed renaming location {name} to new name: {newName}", originalName, newName);
-            }
-        }
-       
-        private static List<EmbedBuilder> BuildEmbed(string location, List<PlayerDto> players)
+
+
+
+        private static List<EmbedBuilder> BuildEmbed(List<PlayerDto> players)
         {
             const int LIMIT = 1020;
 
             var pageText = "";
             var builders = new List<EmbedBuilder>();
+            var locationName = players.First().Location;
+            var locationFaction = players.First().LocationFaction;
+            var locationLevel = players.First().LocationLevel;
 
-            foreach (var playerText in players.OrderBy(a => a.Name).Select(x => $"{x.Name} [{x.Alliance ?? "Unknown"}]"))
+
+            foreach (var player in players.OrderBy(a => a.Alliance).ThenBy(a=>a.Name))
             {
-                if (pageText.Length + playerText.Length > LIMIT)
+                var text = (player.Alliance == null ? "" : $"[{player.Alliance}] ") + player.Name;
+
+                if (pageText.Length + text.Length > LIMIT)
                 {
                     var embed = new EmbedBuilder()
-                        .WithTitle($"Players in {location} Page ");
-         
+                        .WithTitle($"Players in {locationName} ({locationLevel}) - {locationFaction} Page ");
+
                     embed.AddField("Players", pageText);
+
 
                     embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
 
@@ -95,17 +86,18 @@ namespace TRUEbot.Modules
                 }
                 else
                 {
-                    pageText += Environment.NewLine + playerText;
+                    pageText += Environment.NewLine + text;
                 }
+
             }
 
             var finalEmbed = new EmbedBuilder()
-                .WithTitle($"Players in {location} Page ");
-         
+                .WithTitle($"Players in {locationName} ({locationLevel}) - {locationFaction} Page ");
+
             finalEmbed.AddField("Players", pageText);
 
             finalEmbed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
-            
+
             builders.Add(finalEmbed);
 
             var page = 1;
@@ -115,7 +107,7 @@ namespace TRUEbot.Modules
             {
                 embedBuilder.Title += $"{page} of {pages}";
             }
-         
+
             return builders;
         }
     }

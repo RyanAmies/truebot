@@ -27,5 +27,7 @@ namespace TRUEbot.Data.Models
         public DateTime UpdatedDate { get; set; }
 
         public string AddedBy { get; set; }
+        public int? SystemId { get; set; }
+        public virtual System System { get; set; }
     }
 }

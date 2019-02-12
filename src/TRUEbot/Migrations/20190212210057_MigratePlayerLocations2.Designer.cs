@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TRUEbot.Data;
 
 namespace TRUEbot.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    partial class EntityContextModelSnapshot : ModelSnapshot
+    [Migration("20190212210057_MigratePlayerLocations2")]
+    partial class MigratePlayerLocations2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,8 +87,6 @@ namespace TRUEbot.Migrations
                     b.Property<int>("Level");
 
                     b.Property<string>("Name");
-
-                    b.Property<string>("NormalizedName");
 
                     b.HasKey("Id");
 

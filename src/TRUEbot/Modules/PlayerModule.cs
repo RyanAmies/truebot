@@ -92,9 +92,16 @@ namespace TRUEbot.Modules
 
                 var response = await _playerService.TryUpdatePlayerName(originalName, newName);
 
-                if (response)
+                switch (response)
                 {
-                    await Context.AddConfirmation();
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             catch (Exception ex)
@@ -114,9 +121,16 @@ namespace TRUEbot.Modules
 
                 var response = await _playerService.TryUpdatePlayerAlliance(playerName, alliance);
 
-                if (response)
+                switch (response)
                 {
-                    await Context.AddConfirmation();
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             catch (Exception ex)
@@ -131,19 +145,78 @@ namespace TRUEbot.Modules
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(playerName) || string.IsNullOrWhiteSpace(location))
+                if (string.IsNullOrWhiteSpace(playerName))
+                {
+                    await ReplyAsync("Invalid player name. Try !spot \"player\" \"system\"");
+
                     return;
+                }
+
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    await ReplyAsync("Invalid location name. Try !spot \"player\" \"system\"");
+
+                    return;
+                }
+
 
                 var response = await _playerService.TryUpdatePlayerLocation(playerName, location);
 
-                if (response)
+                switch (response)
                 {
-                    await Context.AddConfirmation();
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    case UpdatePlayerResult.CantFindSystem:
+                        await ReplyAsync("Unable to find a system with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed spotting player {name} to in location: {location}", playerName, location);
+            }
+        }
+
+        [Command("missing"), Summary("Clears a players location")]
+        [UsedImplicitly]
+        public async Task Missing(string playerName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(playerName))
+                {
+                    await ReplyAsync("Invalid player name. Try !spot \"player\" \"system\"");
+
+                    return;
+                }
+                
+
+                var response = await _playerService.TryUpdatePlayerLocation(playerName, null);
+
+                switch (response)
+                {
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    case UpdatePlayerResult.CantFindSystem:
+                        await ReplyAsync("Unable to find a system with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed spotting player {name} to in location: {location}", playerName);
             }
         }
 
@@ -158,9 +231,17 @@ namespace TRUEbot.Modules
 
                 var response = await _playerService.TryDeletePlayer(playerName);
 
-                if (response)
+                switch (response)
                 {
-                    await Context.AddConfirmation();
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+
                 }
             }
             catch (Exception ex)
@@ -176,7 +257,7 @@ namespace TRUEbot.Modules
 
             embed.AddField("Alliance", player.Alliance ?? "Unknown");
 
-            embed.AddField("Location", player.Location ?? "Unknown");
+            embed.AddField("Location", player.Location == null ?"Unknown": $"{player.Location} ({player.LocationLevel}) - {player.LocationFaction}" );
 
             embed.WithFooter(GetPostedMeta(player)).WithColor(new Color(95, 186, 125));
 

@@ -32,7 +32,7 @@ namespace TRUEbot.Modules
             {
                 var players = await _playerService.GetPlayersInAlliance(allianceName);
 
-                if (!players.Any()) 
+                if (!players.Any())
                 {
                     await ReplyAsync("I couldn't find any players in this alliance");
                     return;
@@ -40,7 +40,10 @@ namespace TRUEbot.Modules
 
                 var allianceEmbed = BuildEmbed(allianceName, players);
 
-                await ReplyAsync(embed: allianceEmbed.Build());
+                foreach (var embed in allianceEmbed)
+                {
+                    await ReplyAsync(embed: embed.Build());
+                }
             }
             catch (Exception ex)
             {
@@ -62,9 +65,16 @@ namespace TRUEbot.Modules
 
                 var response = await _playerService.TryUpdateAllianceName(originalName, newName);
 
-                if (response)
+                switch (response)
                 {
-                    await Context.AddConfirmation();
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("There are no players with that alliance name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             catch (Exception ex)
@@ -80,17 +90,23 @@ namespace TRUEbot.Modules
             var pageText = "";
             var builders = new List<EmbedBuilder>();
 
-            foreach (var playerText in players.OrderBy(a => a.Name).Select(x => $"{x.Name} ({x.Location ?? "Unknown"})"))
+            foreach (var x in players.OrderBy(a => a.Name))
             {
-                if (pageText.Length + playerText.Length > LIMIT)
+                var text = $"{x.Name} in ";
+                if (x.Location == null)
+                    text += "Unknown";
+                else
+                    text += $"{x.Location} ({x.LocationLevel}) - {x.LocationFaction}";
+
+                if (pageText.Length + text.Length > LIMIT)
                 {
                     var embed = new EmbedBuilder()
                         .WithTitle($"{allianceName} Players Page ");
-         
-                    embed.AddField("Players", pageText);
 
+                        embed.AddField("Players", pageText);
+                    
                     embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
-
+                    
 
                     builders.Add(embed);
 
@@ -98,17 +114,18 @@ namespace TRUEbot.Modules
                 }
                 else
                 {
-                    pageText += Environment.NewLine + playerText;
+                    pageText += Environment.NewLine + text;
                 }
+
             }
 
             var finalEmbed = new EmbedBuilder()
                 .WithTitle($"{allianceName} Players Page ");
-         
-            finalEmbed.AddField("Players", pageText);
+
+                finalEmbed.AddField("Players", pageText);
 
             finalEmbed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
-            
+
             builders.Add(finalEmbed);
 
             var page = 1;
@@ -118,7 +135,7 @@ namespace TRUEbot.Modules
             {
                 embedBuilder.Title += $"{page} of {pages}";
             }
-         
+
             return builders;
         }
     }

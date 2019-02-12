@@ -55,10 +55,89 @@ namespace TRUEbot.Modules
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(playerName) || string.IsNullOrWhiteSpace(location))
+                if (string.IsNullOrWhiteSpace(playerName))
+                {
+                    await ReplyAsync("Invalid player name. Try !spot \"player\" \"system\"");
+
                     return;
+                }
+
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    await ReplyAsync("Invalid location name. Try !spot \"player\" \"system\"");
+
+                    return;
+                }
+
 
                 var response = await _playerService.TryUpdatePlayerLocation(playerName, location);
+
+                switch (response)
+                {
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    case UpdatePlayerResult.CantFindSystem:
+                        await ReplyAsync("Unable to find a system with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed spotting player {name} to in location: {location}", playerName, location);
+            }
+        }
+
+        [Command("missing"), Summary("Spots players and updates their location")]
+        [UsedImplicitly]
+        public async Task Missing(string playerName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(playerName))
+                {
+                    await ReplyAsync("Invalid player name. Try !spot \"player\" \"system\"");
+
+                    return;
+                }
+                
+
+                var response = await _playerService.TryUpdatePlayerLocation(playerName, null);
+
+                switch (response)
+                {
+                    case UpdatePlayerResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case UpdatePlayerResult.CantFindPlayer:
+                        await ReplyAsync("Unable to find a player with that name");
+                        break;
+                    case UpdatePlayerResult.CantFindSystem:
+                        await ReplyAsync("Unable to find a system with that name");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed spotting player {name} to in location: {location}", playerName);
+            }
+        }
+
+
+        [Command("normalise"), Summary("Normalises system names")]
+        [UsedImplicitly]
+        public async Task Normalise()
+        {
+            try
+            {
+                var response = await _playerService.NormaliseSystemNames();
 
                 if (response)
                 {
@@ -67,7 +146,7 @@ namespace TRUEbot.Modules
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed spotting player {name} to in location: {location}", playerName, location);
+                Log.Error(ex, "Failed normalizing names");
             }
         }
 
@@ -93,10 +172,18 @@ namespace TRUEbot.Modules
 
                 var result = await _playerService.AddPlayer(name, alliance, location, Context.User.Username);
 
-                if (result == PlayerCreationResult.OK)
-                    await Context.AddConfirmation();
-                else
-                    await ReplyAsync("Player already exists please use `assign` to change alliance or `spot` to change location");
+                switch (result)
+                {
+                    case PlayerCreationResult.OK:
+                        await Context.AddConfirmation();
+                        break;
+                    case PlayerCreationResult.CantFindSystem:
+                        await ReplyAsync("Could not find the defined system");
+                        break;
+                    default:
+                        await ReplyAsync("Player already exists please use `assign` to change alliance or `spot` to change location");
+                        break;
+                }
 
             }
             catch (Exception ex)

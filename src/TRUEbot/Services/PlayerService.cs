@@ -15,16 +15,16 @@ namespace TRUEbot.Services
         Task<PlayerDto> GetPlayerByName(string playerName);
         Task<List<PlayerDto>> GetPlayersInAlliance(string alliance);
         Task<List<PlayerDto>> GetPlayersInLocation(string location);
-        Task<bool> TryUpdatePlayerName(string originalPlayerName, string newPlayerName);
-        Task<bool> TryUpdateLocationName(string originalLocationName, string newLocation);
-        Task<bool> TryUpdatePlayerLocation(string playerName, string location);
-        Task<bool> TryUpdatePlayerAlliance(string playerName, string alliance);
-        Task<bool> TryDeletePlayer(string playerName);
+        Task<UpdatePlayerResult> TryUpdatePlayerName(string originalPlayerName, string newPlayerName);
+        Task<UpdatePlayerResult> TryUpdatePlayerLocation(string playerName, string location);
+        Task<UpdatePlayerResult> TryUpdatePlayerAlliance(string playerName, string alliance);
+        Task<UpdatePlayerResult> TryDeletePlayer(string playerName);
 
-       Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string playerName);
-        Task<bool> TryUpdateAllianceName(string originalAllianceName, string newAllianceName);
-        
+        Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string playerName);
+        Task<UpdatePlayerResult> TryUpdateAllianceName(string originalAllianceName, string newAllianceName);
+
         Task<List<PlayerDto>> GetAllPlayersAsync();
+        Task<bool> NormaliseSystemNames();
     }
 
     public class PlayerService : IPlayerService
@@ -35,12 +35,12 @@ namespace TRUEbot.Services
         {
             _db = db;
         }
-        
+
         public async Task<PlayerCreationResult> AddPlayer(string playerName, string alliance, string location, string addedByUsername)
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player != null)
                 return PlayerCreationResult.Duplicate;
@@ -52,59 +52,59 @@ namespace TRUEbot.Services
 
             _db.Players.Add(player);
 
-            UpdatePlayer(player, playerName, alliance, location);
+            Data.Models.System system = null;
+
+            if (string.IsNullOrWhiteSpace(location) == false)
+            {
+                var systemName = location.Normalise();
+
+                system = await _db.Systems.FirstOrDefaultAsync(a => a.NormalizedName == systemName);
+                if (system == null)
+                    return PlayerCreationResult.CantFindSystem;
+            }
+
+            UpdatePlayer(player, playerName, alliance, system);
 
             await _db.SaveChangesAsync();
 
             return PlayerCreationResult.OK;
         }
 
-        public async Task<bool> TryUpdatePlayerName(string originalPlayerName, string newPlayerName)
+        public async Task<UpdatePlayerResult> TryUpdatePlayerName(string originalPlayerName, string newPlayerName)
         {
             var normalized = originalPlayerName.Normalise();
 
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
-                return false;
+                return UpdatePlayerResult.CantFindPlayer;
 
-            UpdatePlayer(player, newPlayerName, player.Alliance, player.Location);
+            UpdatePlayer(player, newPlayerName, player.Alliance, player.System);
 
             await _db.SaveChangesAsync();
 
-            return true;
+            return UpdatePlayerResult.OK;
         }
-        
-        public async Task<bool> TryUpdateLocationName(string originalLocationName, string newLocation)
-        {
-            var normalized = originalLocationName.Normalise();
 
-            var players = await _db.Players.Where(x => x.NormalizedLocation == normalized|| x.Location == originalLocationName).ToListAsync();
 
-            foreach (var player in players)
-            {
-                UpdatePlayer(player, player.Name, player.Alliance, newLocation);
-            }
 
-            await _db.SaveChangesAsync();
-
-            return true;
-        } 
-
-        public async Task<bool> TryUpdateAllianceName(string originalAllianceName, string newAllianceName)
+        public async Task<UpdatePlayerResult> TryUpdateAllianceName(string originalAllianceName, string newAllianceName)
         {
             var normalized = originalAllianceName.Normalise();
 
-            var players = await _db.Players.Where(x => x.NormalizedAlliance == normalized || x.Alliance == originalAllianceName).ToListAsync();
+            var players = await _db.Players.Include(a=>a.System).Where(x => x.NormalizedAlliance == normalized || x.Alliance == originalAllianceName).ToListAsync();
+
+            if (players.Any() == false)
+                return UpdatePlayerResult.CantFindPlayer;
 
             foreach (var player in players)
             {
-                UpdatePlayer(player, player.Name, newAllianceName, player.Location);
+                UpdatePlayer(player, player.Name, newAllianceName, player.System);
             }
 
             await _db.SaveChangesAsync();
 
-            return true;
+            return UpdatePlayerResult.OK;
         }
 
         public async Task<List<PlayerDto>> GetAllPlayersAsync()
@@ -113,59 +113,86 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
-                    Location = x.Location,
+                    Location = x.SystemId != null ? x.System.Name : null,
+                    LocationFaction = x.SystemId != null ? x.System.Faction : null,
+                    LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
                     Alliance = x.Alliance,
                     AddedDate = x.AddedDate,
                     UpdatedDate = x.UpdatedDate,
                 }).ToListAsync();
         }
 
-        public async Task<bool> TryUpdatePlayerLocation(string playerName, string location)
+        public async Task<bool> NormaliseSystemNames()
         {
-            var normalized = playerName.Normalise();
-
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
-
-            if (player == null)
-                return false;
-
-            UpdatePlayer(player, player.Name, player.Alliance, location);
+            var systems = await _db.Systems.ToListAsync();
+            foreach (var system in systems)
+            {
+                system.NormalizedName = system.Name.Normalise();
+            }
 
             await _db.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<bool> TryUpdatePlayerAlliance(string playerName, string alliance)
+        public async Task<UpdatePlayerResult> TryUpdatePlayerLocation(string playerName, string location)
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
-                return false;
+                return UpdatePlayerResult.CantFindPlayer;
 
-            UpdatePlayer(player, player.Name, alliance, player.Location);
+            Data.Models.System system = null;
+
+            if (location != null)
+            {
+                var normalisedSystemName = location.Normalise();
+
+                system = await _db.Systems.FirstOrDefaultAsync(a => a.NormalizedName == normalisedSystemName);
+                if (system == null)
+                    return UpdatePlayerResult.CantFindSystem;
+            }
+
+            UpdatePlayer(player, player.Name, player.Alliance, system);
 
             await _db.SaveChangesAsync();
 
-            return true;
+            return UpdatePlayerResult.OK;
         }
 
-        public async Task<bool> TryDeletePlayer(string playerName)
+        public async Task<UpdatePlayerResult> TryUpdatePlayerAlliance(string playerName, string alliance)
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
-                return false;
+                return UpdatePlayerResult.CantFindPlayer;
+
+            UpdatePlayer(player, player.Name, alliance, player.System);
+
+            await _db.SaveChangesAsync();
+
+            return UpdatePlayerResult.OK;
+        }
+
+        public async Task<UpdatePlayerResult> TryDeletePlayer(string playerName)
+        {
+            var normalized = playerName.Normalise();
+
+            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+
+            if (player == null)
+                return UpdatePlayerResult.CantFindPlayer;
+
 
             _db.Players.Remove(player);
 
             await _db.SaveChangesAsync();
 
-            return true;
+            return UpdatePlayerResult.OK;
         }
 
 
@@ -176,16 +203,18 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
-                    Location = x.Location,
+                    Location = x.SystemId != null ? x.System.Name : null,
+                    LocationFaction = x.SystemId != null ? x.System.Faction : null,
+                    LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
                     Alliance = x.Alliance,
                     AddedDate = x.AddedDate,
                     UpdatedDate = x.UpdatedDate,
                 }).ToListAsync();
         }
 
-       
 
-        private static void UpdatePlayer(Player player, string name, string alliance, string location)
+
+        private static void UpdatePlayer(Player player, string name, string alliance, Data.Models.System system)
         {
             name = name.UnifyApostrophe();
 
@@ -200,14 +229,7 @@ namespace TRUEbot.Services
                 player.NormalizedAlliance = alliance.Normalise();
             }
 
-            if (!string.IsNullOrWhiteSpace(location))
-            {
-                location = location.UnifyApostrophe();
-
-
-                player.Location = location;
-                player.NormalizedLocation = location.Normalise();
-            }
+            player.System = system;
 
             player.UpdatedDate = DateTime.Now;
         }
@@ -221,7 +243,9 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
-                    Location = x.Location,
+                    Location = x.SystemId != null ? x.System.Name : null,
+                    LocationFaction = x.SystemId != null ? x.System.Faction : null,
+                    LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
                     Alliance = x.Alliance,
                     AddedDate = x.AddedDate,
                     UpdatedDate = x.UpdatedDate,
@@ -237,7 +261,9 @@ namespace TRUEbot.Services
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
-                    Location = x.Location,
+                    Location = x.SystemId != null ? x.System.Name : null,
+                    LocationFaction = x.SystemId != null ? x.System.Faction : null,
+                    LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
                     Alliance = x.Alliance,
                     AddedDate = x.AddedDate,
                     UpdatedDate = x.UpdatedDate,
@@ -249,11 +275,13 @@ namespace TRUEbot.Services
             var normalized = location.Normalise();
 
             return await _db.Players
-                .Where(x => x.NormalizedLocation.Contains(normalized))
+                .Where(x => x.System.NormalizedName.Contains(normalized))
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
-                    Location = x.Location,
+                    Location = x.SystemId != null ? x.System.Name : null,
+                    LocationFaction = x.SystemId != null ? x.System.Faction : null,
+                    LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
                     Alliance = x.Alliance,
                     AddedDate = x.AddedDate,
                     UpdatedDate = x.UpdatedDate,
@@ -264,17 +292,26 @@ namespace TRUEbot.Services
     public enum PlayerCreationResult
     {
         OK,
-        Duplicate
+        Duplicate,
+        CantFindSystem
     }
-
+    public enum UpdatePlayerResult
+    {
+        OK,
+        CantFindPlayer,
+        CantFindAlliance,
+        CantFindSystem
+    }
     public class PlayerDto
     {
         public string Name { get; set; }
         public string Location { get; set; }
+        public string LocationFaction { get; set; }
+        public int? LocationLevel { get; set; }
         public string Alliance { get; set; }
         public DateTime AddedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
     }
 
-   
+
 }

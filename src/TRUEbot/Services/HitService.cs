@@ -31,7 +31,7 @@ namespace TRUEbot.Services
         {
             var normalized = playerName.Normalise();
 
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalized);
+            var player = await _db.Players.Include(a=>a.System).FirstOrDefaultAsync(x => x.NormalizedName == normalized);
 
             if (player == null)
                 return false;
@@ -86,19 +86,6 @@ namespace TRUEbot.Services
 
         }
 
-        public async Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string reportedBy)
-        {
-            return await _db.Players
-                .Where(x => x.AddedBy == reportedBy)
-                .Select(x => new PlayerDto
-                {
-                    Name = x.Name,
-                    Location = x.Location,
-                    Alliance = x.Alliance,
-                    AddedDate = x.AddedDate,
-                    UpdatedDate = x.UpdatedDate,
-                }).ToListAsync();
-        }
 
         public async Task<List<HitDto>> GetHitsCompletedByUserAsync(string username)
         {
@@ -116,33 +103,6 @@ namespace TRUEbot.Services
                 }).ToListAsync();
         }
 
-
-        private static void UpdatePlayer(Player player, string name, string alliance, string location)
-        {
-            name = name.UnifyApostrophe();
-
-            player.Name = name;
-            player.NormalizedName = name.Normalise();
-
-            if (!string.IsNullOrWhiteSpace(alliance))
-            {
-                alliance = alliance.UnifyApostrophe();
-
-                player.Alliance = alliance;
-                player.NormalizedAlliance = alliance.Normalise();
-            }
-
-            if (!string.IsNullOrWhiteSpace(location))
-            {
-                location = location.UnifyApostrophe();
-
-
-                player.Location = location;
-                player.NormalizedLocation = location.Normalise();
-            }
-
-            player.UpdatedDate = DateTime.Now;
-        }
 
      
 
