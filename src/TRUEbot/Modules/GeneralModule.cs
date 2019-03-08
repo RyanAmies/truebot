@@ -177,14 +177,14 @@ namespace TRUEbot.Modules
         
         private static List<EmbedBuilder> BuildAllPlayersEmbed( List<PlayerDto> players)
         {
-            const int LIMIT = 1020;
+            const int LIMIT = 950;
 
             var pageText = "";
             var builders = new List<EmbedBuilder>();
 
             foreach (var playerText in players.OrderBy(a => a.Name).Select(x => $"{x.Name} [{x.Alliance ?? "Unknown"}] ({x.Location ?? "Unknown"})"))
             {
-                if (pageText.Length + playerText.Length > LIMIT)
+                if ((pageText + Environment.NewLine + playerText).Length > LIMIT)
                 {
                     pageText += Environment.NewLine + playerText;
 
