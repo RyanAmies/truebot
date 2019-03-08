@@ -294,7 +294,7 @@ namespace TRUEbot.Services
             var normalized = alliance.Normalise();
 
             return await _db.Players
-                .Where(x => x.NormalizedAlliance.Contains(normalized))
+                .Where(x => x.NormalizedAlliance==normalized)
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,

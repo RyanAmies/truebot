@@ -186,6 +186,8 @@ namespace TRUEbot.Modules
             {
                 if (pageText.Length + playerText.Length > LIMIT)
                 {
+                    pageText += Environment.NewLine + playerText;
+
                     var embed = new EmbedBuilder()
                         .WithTitle("All Players Page ");
          
