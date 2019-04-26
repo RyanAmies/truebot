@@ -17,28 +17,35 @@ namespace TRUEbot
 {
     public class Program
     {
-        private const string DISCORD_BOT_TOKEN_VARIABLE = "DiscordBotToken";
         private const char COMMAND_PREFIX = '!';
 
         private static DiscordSocketClient _discordClient;
         private static CommandService _discordCommandService;
         private static IServiceCollection _serviceCollection;
         private static IServiceProvider _provider;
-        private static IConfigurationRoot _configuration;
 
         private static async Task Main(string[] args)
         {
             Log.Logger = CreateLogger();
 
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json");
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-            _configuration = builder.Build();
+            var pathToAppSettings = Path.Combine(Directory.GetCurrentDirectory(), "Properties");
+
+            Log.Debug("Working with path {path}", pathToAppSettings);
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(pathToAppSettings)
+                .AddJsonFile("appsettings.json", false)
+                .AddJsonFile($"appsettings.{environmentName}.json", true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var discordToken = configuration["DiscordToken"];
 
             _serviceCollection = new ServiceCollection();
 
-            _serviceCollection.AddDbContext<EntityContext>();
+            _serviceCollection.AddDbContext<EntityContext>(op => op.UseSqlite(configuration.GetConnectionString("TrueBot")));
 
             _serviceCollection.AddScoped<IPlayerService, PlayerService>();
             _serviceCollection.AddScoped<IHitService, HitService>();
@@ -59,8 +66,6 @@ namespace TRUEbot
             {
                 service.Database.Migrate();
             }
-
-            var discordToken = GetDiscordToken();
 
             await _discordClient.LoginAsync(TokenType.Bot, discordToken);
 
@@ -144,11 +149,6 @@ namespace TRUEbot
             {
                 LogLevel = LogSeverity.Debug,
             });
-        }
-
-        private static string GetDiscordToken()
-        {
-            return _configuration[DISCORD_BOT_TOKEN_VARIABLE];
         }
     }
 }
