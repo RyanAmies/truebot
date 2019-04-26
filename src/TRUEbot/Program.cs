@@ -30,7 +30,7 @@ namespace TRUEbot
 
             var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-            var pathToAppSettings = Path.Combine(Directory.GetCurrentDirectory(), "Properties");
+            var pathToAppSettings = Path.Combine(Directory.GetCurrentDirectory());
 
             Log.Debug("Working with path {path}", pathToAppSettings);
 
