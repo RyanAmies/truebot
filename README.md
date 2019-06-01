@@ -46,6 +46,8 @@ This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues P
 
 `!kill log {victim} {power} {imageLink}` logs the kill of a victim, and the power of the destroyed ship. {power} must be a number, with no commas (,). {imageLink} must be a URL to the image for the kill.
 
+`!kill show {id}` shows a kill by the index number given (can be found on the reported kill, i.e. #54)
+
 `!kill alliancestats {alliance}` gets all the kills for an alliance in the last 1 day
 
 `!kill alliancestats {alliance} {days}` gets all the kills for an alliance in the last {day} days
