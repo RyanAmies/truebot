@@ -318,273 +318,66 @@ namespace TRUEbot.Modules
       
         private static List<EmbedBuilder> BuildKillCountLeaderBoardEmbed(List<LeaderboardDto> kills, int days, int leaderboardCount)
         {
-            const int LIMIT = 1020;
+            var title = $"Top {leaderboardCount} Killers by Kill Count for the last {days} days";
+            var footer = $"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.";
 
-            var pageText = "";
-            var builders = new List<EmbedBuilder>();
             int index = 1;
 
-            foreach (var x in kills.OrderByDescending(a => a.TotalKills))
-            {
-                var text =$"{index++}. {x.Player} with {x.TotalPower.ToString("N0")} ({(x.TotalPower / x.TotalKills).ToString("N0")} average)";
-
-                if (pageText.Length + text.Length > LIMIT)
-                {
-                    var embed = new EmbedBuilder();
-
-                    embed.AddField("Top {leaderboardCount} Killers by Kill Count for the last {days} days", pageText);
-
-
-                    embed.WithFooter($"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-                    builders.Add(embed);
-
-                    pageText = text;
-                }
-                else
-                {
-                    pageText += Environment.NewLine + text;
-                }
-
-            }
-
-            var finalEmbed = new EmbedBuilder();
-
-            finalEmbed.AddField("Top {leaderboardCount} Killers by Kill Count for the last {days} days", pageText);
+            var dataRows = kills.OrderByDescending(a => a.TotalKills).Select(x => $"{index++}. {x.Player} with {x.TotalKills.ToString("N0")} kills ({(x.TotalPower / x.TotalKills).ToString("N0")} average)").ToList();
             
-            finalEmbed.WithFooter($"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-            builders.Add(finalEmbed);
-
-            var page = 1;
-            var pages = builders.Count;
-
-            foreach (var embedBuilder in builders)
-            {
-                embedBuilder.Title += $"{page++} of {pages}";
-            }
-
-            return builders;
+            return EmbedPaginator.Paginate(dataRows,title,"Top Killers",footer);
         }
 
         
 
         private static List<EmbedBuilder> BuildPowerDestroyedLeaderBoardEmbed( List<LeaderboardDto> kills, int days, int leaderboardCount)
         {
-            const int LIMIT = 1020;
+            var title = $"Top {leaderboardCount} Killers by Power Destroyed for the last {days} days";
+            var footer = $"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.";
 
-            var pageText = "";
-            var builders = new List<EmbedBuilder>();
             int index = 1;
 
-            foreach (var x in kills.OrderByDescending(a => a.TotalPower))
-            {
-                var text =$"{index++}. {x.Player} with {x.TotalPower.ToString("N0")} ({(x.TotalPower / x.TotalKills).ToString("N0")} average)";
-
-                if (pageText.Length + text.Length > LIMIT)
-                {
-                    var embed = new EmbedBuilder();
-
-                    embed.AddField($"Top {leaderboardCount} Killers by Power Destroyed for the last {days} days", pageText);
-
-
-                    embed.WithFooter($"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-                    builders.Add(embed);
-
-                    pageText = text;
-                }
-                else
-                {
-                    pageText += Environment.NewLine + text;
-                }
-
-            }
-
-            var finalEmbed = new EmbedBuilder();
-
-            finalEmbed.AddField($"Top {leaderboardCount} Killers by Power Destroyed for the last {days} days", pageText);
+            var dataRows = kills.OrderByDescending(a => a.TotalPower).Select(x => $"{index++}. {x.Player} with {x.TotalPower.ToString("N0")} power ({(x.TotalPower / x.TotalKills).ToString("N0")} average)").ToList();
             
-            finalEmbed.WithFooter($"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-            builders.Add(finalEmbed);
-
-            var page = 1;
-            var pages = builders.Count;
-
-            foreach (var embedBuilder in builders)
-            {
-                embedBuilder.Title += $"{page++} of {pages}";
-            }
-
-            return builders;
+            return EmbedPaginator.Paginate(dataRows,title,"Top Killers",footer);
         }
        
 
      
         private static List<EmbedBuilder> BuildKillerEmbed(string player, List<KillDto> kills, DateTime from, DateTime to)
         {
-            const int LIMIT = 1020;
-
-            var pageText = "";
-            var builders = new List<EmbedBuilder>();
-
-            foreach (var x in kills.OrderByDescending(a => a.KilledOn))
-            {
-                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} on {x.KilledOn} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
-
-                if (pageText.Length + text.Length > LIMIT)
-                {
-                    var embed = new EmbedBuilder();
-
-                    embed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}", pageText);
-
-
-                    embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-                    builders.Add(embed);
-
-                    pageText = text;
-                }
-                else
-                {
-                    pageText += Environment.NewLine + text;
-                }
-
-            }
-
-            var finalEmbed = new EmbedBuilder();
-
-            finalEmbed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}", pageText);
+            var title =$"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}";
+            var footer = $"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.";
             
-            finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-            builders.Add(finalEmbed);
-
-            var page = 1;
-            var pages = builders.Count;
-
-            foreach (var embedBuilder in builders)
-            {
-                embedBuilder.Title += $"{page++} of {pages}";
-            }
-
-            return builders;
+            var dataRows = kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} on {x.KilledOn.ToString("dd/MM HH:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})").ToList();
+            
+            return EmbedPaginator.Paginate(dataRows,title,"Confirmed Kills",footer);
         }
     
+       
         private static List<EmbedBuilder> BuildVictimEmbed(List<KillDto> kills, DateTime from)
         {
             var victimName = kills.First().Victim;
             var victimAlliance = kills.First().Alliance;
 
-            const int LIMIT = 1020;
-
-            var pageText = "";
-            var builders = new List<EmbedBuilder>();
-
-            foreach (var x in kills.OrderByDescending(a => a.KilledOn))
-            {
-                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
-
-                if (pageText.Length + text.Length > LIMIT)
-                {
-                    var embed = new EmbedBuilder();
-
-                    embed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM HH:mm")}", pageText);
-
-
-                    embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-                    builders.Add(embed);
-
-                    pageText = text;
-                }
-                else
-                {
-                    pageText += Environment.NewLine + text;
-                }
-
-            }
-
-            var finalEmbed = new EmbedBuilder();
-
-            finalEmbed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM HH:mm")}", pageText);
+            var title = $"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM HH:mm")}";
+            var footer = $"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.";
             
-            finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-            builders.Add(finalEmbed);
-
-            var page = 1;
-            var pages = builders.Count;
-
-            foreach (var embedBuilder in builders)
-            {
-                embedBuilder.Title += $"{page++} of {pages}";
-            }
-
-            return builders;
+            var dataRows = kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({x.Power.ToString("N0")}) [Img]({x.ImageLink})").ToList();
+            
+            return EmbedPaginator.Paginate(dataRows,title,"Confirmed Kills",footer);
         }
 
         private static List<EmbedBuilder> BuildAllianceEmbed(List<KillDto> kills, DateTime from, DateTime to)
         {
             var victimAlliance = kills.First().Alliance;
 
-            const int LIMIT = 1020;
-
-            var pageText = "";
-            var builders = new List<EmbedBuilder>();
-
-            foreach (var x in kills.OrderByDescending(a => a.KilledOn))
-            {
-                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
-
-                if (pageText.Length + text.Length > LIMIT)
-                {
-                    var embed = new EmbedBuilder();
-
-                    embed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM HH:mm")}", pageText);
-
-
-                    embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-                    builders.Add(embed);
-
-                    pageText = text;
-                }
-                else
-                {
-                    pageText += Environment.NewLine + text;
-                }
-
-            }
-
-            var finalEmbed = new EmbedBuilder();
-
-            finalEmbed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM HH:mm")}", pageText);
+            var title = $"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM HH:mm")}";
+            var footer = $"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.";
             
-            finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
-
-
-            builders.Add(finalEmbed);
-
-            var page = 1;
-            var pages = builders.Count;
-
-            foreach (var embedBuilder in builders)
-            {
-                embedBuilder.Title += $"{page++} of {pages}";
-            }
-
-            return builders;
+            var dataRows = kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({x.Power.ToString("N0")}) [Img]({x.ImageLink})").ToList();
+            
+            return EmbedPaginator.Paginate(dataRows,title,"Confirmed Kills",footer);
         }
 
 
@@ -596,9 +389,7 @@ namespace TRUEbot.Modules
             var output = $"#{killerStats.Id} [{killerStats.Alliance}] {killerStats.Victim} Killed By {killerStats.KilledBy} on {killerStats.KilledOn.ToString("dd/MM HH:mm")} ({ killerStats.Power.ToString("N0")}) [Img]({killerStats.ImageLink})";
 
             embed.AddField($"Kill #{killerStats.Id}", output);
-
             
-
             return embed;
         }
 

@@ -39,9 +39,12 @@ namespace TRUEbot.Modules
                     return;
                 }
 
-                var locationEmbed = BuildEmbed(username, players);
+                var statsEmbed = BuildEmbed(username, players);
 
-                await ReplyAsync(embed: locationEmbed.Build());
+                foreach (var embedBuilder in statsEmbed)
+                {
+                    await ReplyAsync(embed: embedBuilder.Build());
+                }
             }
             catch (Exception ex)
             {
@@ -228,18 +231,72 @@ namespace TRUEbot.Modules
             return builders;
         }
 
-        private static EmbedBuilder BuildEmbed(string location, List<PlayerDto> players)
+        //private static EmbedBuilder BuildEmbed(string location, List<PlayerDto> players)
+        //{
+        //    var embed = new EmbedBuilder()
+        //        .WithTitle(location);
+
+        //    var output = string.Join(Environment.NewLine, players.OrderBy(a => a.Name).Select(x => $"{x.Name} ({x.Alliance ?? "Unknown"})"));
+
+        //    embed.AddField("Players", output);
+
+        //    embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
+
+        //    return embed;
+        //}
+
+        private static List<EmbedBuilder> BuildEmbed(string username, List<PlayerDto> players)
         {
-            var embed = new EmbedBuilder()
-                .WithTitle(location);
+            const int LIMIT = 1020;
 
-            var output = string.Join(Environment.NewLine, players.OrderBy(a => a.Name).Select(x => $"{x.Name} ({x.Alliance ?? "Unknown"})"));
+            var pageText = "";
+            var builders = new List<EmbedBuilder>();
+            int index = 1;
 
-            embed.AddField("Players", output);
+            foreach (var x in players.OrderByDescending(a => a.Name))
+            {
+                var text = $"{x.Name} ({x.Alliance ?? "Unknown"})";
 
-            embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
+                if (pageText.Length + text.Length > LIMIT)
+                {
+                    var embed = new EmbedBuilder();
 
-            return embed;
+                    embed.AddField($"Players Added by {username}", pageText);
+
+
+                    embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
+
+
+                    builders.Add(embed);
+
+                    pageText = text;
+                }
+                else
+                {
+                    pageText += Environment.NewLine + text;
+                }
+
+            }
+
+            var finalEmbed = new EmbedBuilder();
+
+            finalEmbed.AddField($"Players Added by {username}", pageText);
+            
+            finalEmbed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
+
+
+            builders.Add(finalEmbed);
+
+            var page = 1;
+            var pages = builders.Count;
+
+            foreach (var embedBuilder in builders)
+            {
+                embedBuilder.Title += $"{page++} of {pages}";
+            }
+
+            return builders;
         }
+
     }
 }
