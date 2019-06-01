@@ -35,6 +35,7 @@ namespace TRUEbot.Data.Models
         public virtual System System { get; set; }
 
         public virtual ICollection<SystemLog> SystemLogs { get; set; } = new HashSet<SystemLog>();
+        public virtual ICollection<Kill> Kills { get; set; } = new HashSet<Kill>();
 
     }
 }
