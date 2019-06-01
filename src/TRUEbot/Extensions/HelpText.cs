@@ -8,7 +8,7 @@ namespace TRUEbot.Extensions
     {
         public static string Text = @"# TRUEbot
 
-This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues PM him.
+This is the official TRUE discord bot ran by InsaneRhino. If you have any issues PM him.
 
 ## Commands
 
