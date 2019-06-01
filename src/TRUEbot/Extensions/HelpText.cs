@@ -38,7 +38,9 @@ This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues P
 
 `!location {name}` gets all players in the location
 
-`!spot {playerName} {locationName}` alias to the player command, updates the location of the player";
+`!spot {playerName} {locationName}` alias to the player command, updates the location of the player
+
+`!missing {playerName}` marks the player as not in their current location";
 
 
          public static string Text2 = @"### Stats

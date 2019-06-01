@@ -67,8 +67,3 @@ This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues P
 `!kill topkills` get the top 10 killers for the last day ordered by power destroyed
 
 `!kill topkills {days}` get the top 10 killers over a period of {days} ordered by power destroyed
-
-### General
-
-`!help` displays help text
-
