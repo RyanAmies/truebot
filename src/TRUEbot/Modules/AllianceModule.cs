@@ -113,7 +113,7 @@ namespace TRUEbot.Modules
 
                     builders.Add(embed);
 
-                    pageText = "";
+                    pageText = text;
                 }
                 else
                 {
@@ -136,7 +136,7 @@ namespace TRUEbot.Modules
 
             foreach (var embedBuilder in builders)
             {
-                embedBuilder.Title += $"{page} of {pages}";
+                embedBuilder.Title += $"{page++} of {pages}";
             }
 
             return builders;

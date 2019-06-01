@@ -232,8 +232,25 @@ namespace TRUEbot.Modules
         {
             try
             {
-               await ReplyAsync(HelpText.Text);
-               await ReplyAsync(HelpText.Text2);
+                var textLines = HelpText.Text.Split(Environment.NewLine);
+                var current = string.Empty;
+
+                foreach (var text in textLines)
+                {
+                    
+                    if ((current + Environment.NewLine + text).Count() > 2000)
+                    {
+                        await ReplyAsync(current);
+                        current = string.Empty;
+                    }
+                    else
+                    {
+                        current += Environment.NewLine + text;
+                    }
+                }
+                await ReplyAsync(current);
+
+              
             }
             catch (Exception ex)
             {
