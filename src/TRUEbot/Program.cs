@@ -124,6 +124,7 @@ namespace TRUEbot
             return new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo.Console()
+                .WriteTo.File("logs\\log.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, shared: true)
                 .CreateLogger();
         }
 
