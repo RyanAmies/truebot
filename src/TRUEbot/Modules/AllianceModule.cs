@@ -13,7 +13,7 @@ using TRUEbot.Services;
 
 namespace TRUEbot.Modules
 {
-    [Group("alliance"), Alias("a")]
+    [Name("Alliance"), Group("alliance"), Alias("a")]
     [UsedImplicitly]
     public class AllianceModule : ModuleBase
     {

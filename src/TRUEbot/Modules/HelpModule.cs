@@ -10,7 +10,7 @@ using Discord.Commands;
 
 namespace TRUEbot.Modules
 {
-    [Group("help")]
+    [Name(nameof(HelpModule)),Group("help")]
     public class HelpModule : InteractiveBase<SocketCommandContext>
     {
         private readonly CommandService _service;
@@ -20,24 +20,46 @@ namespace TRUEbot.Modules
             _service = service;
         }
 
+        public List<(string, string)> HiddenMethodsFromHelp = new List<(string, string)>
+        {
+            (nameof(GeneralModule), nameof(GeneralModule.All)),
+            (nameof(GeneralModule), nameof(GeneralModule.Normalise)),
+            (nameof(HelpModule), null),
+        };
+
         [Command]
         public async Task Help()
         {
-            var pagesss = _service.Modules.Select(x => new PaginatedMessage.Page
+            var pages = _service.Modules.Where(x => !HiddenMethodsFromHelp.Any((h) => h.Item1.Equals(x.Name) && h.Item2 == null)).Select(x => new PaginatedMessage.Page
             {
                 Title = x.Name,
                 Description = x.Summary ?? (x.Group != null ? $"All commands prefixed with {x.Group}" : "The following commands can be used"),
                 Fields = x.Commands
+                    .Where(f => !HiddenMethodsFromHelp.Any((h) => h.Item1.Equals(x.Name) && h.Item2.Equals(f.Name, StringComparison.OrdinalIgnoreCase)))
                     .Select(f => new EmbedFieldBuilder
                     {
                         Name = string.Join(", ", f.Aliases),
-                        Value = f.Summary ?? "No summary",
+                        Value = BuildCommandInfo(f),
                     }).ToList(),
             }).ToList();
 
+            string BuildCommandInfo(CommandInfo commandInfo)
+            {
+                var description = "";
+
+                if (commandInfo.Summary != null)
+                {
+                    description += commandInfo.Summary;
+                }
+
+                description += Environment.NewLine + "Usage: `!" + commandInfo.Aliases.First() + " " + string.Join(" ", commandInfo.Parameters.Select(x => $"{{{x.Name}}}")) + "`";
+
+                return description;
+            }
+
             var pager = new PaginatedMessage
             {
-                Pages = pagesss,
+                Pages = pages,
                 Color = Color.DarkGreen,
                 Description = "Default Embed Description",
                 FooterOverride = null,

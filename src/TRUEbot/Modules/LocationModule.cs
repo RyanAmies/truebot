@@ -11,7 +11,7 @@ using TRUEbot.Services;
 
 namespace TRUEbot.Modules
 {
-    [Group("location"), Alias("sys", "systems", "system", "l")]
+    [Name("Location"),Group("location"), Alias("sys", "systems", "system", "l")]
     [UsedImplicitly]
     public class LocationModule : ModuleBase
     {

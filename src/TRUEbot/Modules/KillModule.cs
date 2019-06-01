@@ -12,7 +12,7 @@ using TRUEbot.Services;
 namespace TRUEbot.Modules
 {
     [UsedImplicitly]
-    [Group("kill"), Alias("kills", "killed")]
+    [Group("kill")]
     public class KillModule : ModuleBase
     {
         private readonly IPlayerService _playerService;
@@ -112,11 +112,11 @@ namespace TRUEbot.Modules
         }
 
         
-        [Command("killerstats"), Summary("Gets the stats for a victim")]
+        [Command("killerstats"), Summary("Gets the stats for a killer")]
         [UsedImplicitly]
         public Task KillerStats() => KillerStats(Context.User.Username, 1);
 
-        [Command("killerstats"), Summary("Gets the stats for a victim")]
+        [Command("killerstats"), Summary("Gets the stats for a killer")]
         [UsedImplicitly]
         public Task KillerStats(string playerName) => KillerStats(playerName, 1);
 
@@ -183,7 +183,7 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("topkills"), Summary("Gets the stats for a victim")]
+        [Command("topkills"), Summary("Gets the the top killers")]
         [UsedImplicitly]
         public Task TopKills() => TopKills(1);
 

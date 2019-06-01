@@ -133,6 +133,7 @@ namespace TRUEbot.Modules
 
         [Command("normalise"), Summary("Normalises system names")]
         [UsedImplicitly]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task Normalise()
         {
             try
@@ -154,6 +155,7 @@ namespace TRUEbot.Modules
 
         [Command("all"), Summary("PM's user with all the users in the database")]
         [UsedImplicitly]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task All()
         {
             try
