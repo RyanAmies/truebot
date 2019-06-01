@@ -63,7 +63,11 @@ namespace TRUEbot.Modules
                 var killersStats = await _killService.GetStatsForKiller(Context.User.Username, fromDate, toDate);
 
                 var killerEmbed = BuildKillerEmbed(Context.User.Username, killersStats, fromDate, toDate);
-                await ReplyAsync(embed: killerEmbed.Build());
+                
+                foreach (var embed in killerEmbed)
+                {
+                    await ReplyAsync(embed: embed.Build());
+                }
 
 
                 var victimStats = await _killService.GetStatsForVictim(playerName, fromDate, toDate);
@@ -134,7 +138,10 @@ namespace TRUEbot.Modules
                 if (killerStats.Any())
                 {
                     var killerEmbed = BuildKillerEmbed(playerName, killerStats, fromDate, toDate);
-                    await ReplyAsync(embed: killerEmbed.Build());
+                    foreach (var embed in killerEmbed)
+                    {
+                        await ReplyAsync(embed: embed.Build());
+                    }
                 }
                 else
                 {
@@ -167,7 +174,7 @@ namespace TRUEbot.Modules
 
                 if (victimStats.Any())
                 {
-                    var victimEmbed = BuildAllianceEmbed(victimStats, fromDate, toDate);
+                   var victimEmbed = BuildAllianceEmbed(victimStats, fromDate, toDate);
                     await ReplyAsync(embed: victimEmbed.Build());
                 }
                 else
@@ -211,11 +218,11 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("toppower"), Summary("Gets the stats for a victim")]
+        [Command("toppower"), Summary("Gets the leaders for power destroyed in the last day")]
         [UsedImplicitly]
         public Task TopPower() => TopPower(1);
 
-        [Command("toppower"), Summary("Gets the stats for a killer")]
+        [Command("toppower"), Summary("Gets the leaders for power destroyed in the last day")]
         [UsedImplicitly]
         public async Task TopPower(int days)
         {
@@ -240,7 +247,7 @@ namespace TRUEbot.Modules
         }
 
 
-        [Command("show"), Summary("Gets the stats for a killer")]
+        [Command("show"), Summary("Shows a specific kill record")]
         [UsedImplicitly]
         public async Task Show( int id)
         {
@@ -303,6 +310,7 @@ namespace TRUEbot.Modules
             
             return embed;
         }
+
         private static EmbedBuilder BuildPowerDestroyedLeaderBoardEmbed( List<LeaderboardDto> kills, int days, int leaderboardCount)
         {
             var embed = new EmbedBuilder();
@@ -318,19 +326,57 @@ namespace TRUEbot.Modules
         }
        
 
-        private static EmbedBuilder BuildKillerEmbed(string player, List<KillDto> kills, DateTime from, DateTime to)
+     
+        private static List<EmbedBuilder> BuildKillerEmbed(string player, List<KillDto> kills, DateTime from, DateTime to)
         {
-            var victimName = kills.First().Victim;
-            var victimAlliance = kills.First().Alliance;
-            var embed = new EmbedBuilder();
+            const int LIMIT = 1020;
 
-            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} on {x.KilledOn} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})"));
+            var pageText = "";
+            var builders = new List<EmbedBuilder>();
 
-            embed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM hh:mm")}", output);
+            foreach (var x in kills.OrderByDescending(a => a.KilledOn))
+            {
+                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} on {x.KilledOn} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
 
-            embed.WithFooter($"{kills.Count} confirmed kills. {kills.Select(a => a.Power).DefaultIfEmpty(0).Sum().ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
+                if (pageText.Length + text.Length > LIMIT)
+                {
+                    var embed = new EmbedBuilder();
 
-            return embed;
+                    embed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM hh:mm")}", pageText);
+
+
+                    embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
+
+
+                    builders.Add(embed);
+
+                    pageText = text;
+                }
+                else
+                {
+                    pageText += Environment.NewLine + text;
+                }
+
+            }
+
+            var finalEmbed = new EmbedBuilder();
+
+            finalEmbed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM hh:mm")}", pageText);
+            
+            finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
+
+
+            builders.Add(finalEmbed);
+
+            var page = 1;
+            var pages = builders.Count;
+
+            foreach (var embedBuilder in builders)
+            {
+                embedBuilder.Title += $"{page++} of {pages}";
+            }
+
+            return builders;
         }
 
         private static EmbedBuilder BuildVictimEmbed(List<KillDto> kills, DateTime from, DateTime to)
