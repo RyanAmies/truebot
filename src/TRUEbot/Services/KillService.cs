@@ -189,7 +189,7 @@ namespace TRUEbot.Services
     public class LeaderboardDto
     {
         public string Player { get; set; }
-        public int? TotalPower { get; set; }
+        public int TotalPower { get; set; }
         public int TotalKills { get; set; }
     }
 
