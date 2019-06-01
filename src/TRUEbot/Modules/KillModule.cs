@@ -265,8 +265,9 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("delete"), Summary("Gets the stats for a killer")]
+        [Command("delete"), Summary("Deletes a kill record")]
         [UsedImplicitly]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task Delete( int id)
         {
             try
