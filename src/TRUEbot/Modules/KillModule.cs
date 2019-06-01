@@ -23,17 +23,28 @@ namespace TRUEbot.Modules
             _playerService = playerService;
             _killService = killService;
         }
-        [Command("log"),Summary("Marks a player as killed")]
+
+        [Command("log"), Summary("Marks a player as killed")]
         [UsedImplicitly]
-        public Task Add(string playerName) => Get(playerName, null);
+        public async Task Get(string playerName, int power)
+        {
+            if (Context.Message.Attachments.Any() == false)
+            {
+                await ReplyAsync($"You must post a picture of the kill, or a link to the image");
+                return;
+            }
+
+            var fn = Context.Message.Attachments.First().Url;
+            await Get(playerName, power,fn);
+        }
 
         [Command("log") ,Summary("Marks a player as killed")]
         [UsedImplicitly]
-        public async Task Get(string playerName, int? power)
+        public async Task Get(string playerName, int power, string imageLink)
         {
             try
             {
-                var result = await _killService.AddKill(playerName, Context.User.Username, power);
+                var result = await _killService.AddKill(playerName, Context.User.Username, power, imageLink);
 
                 if (result == KillLogResult.CannotFindPlayer)
                 {
@@ -262,7 +273,7 @@ namespace TRUEbot.Modules
             var victimAlliance = kills.First().Alliance;
             var embed = new EmbedBuilder();
 
-            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"[{x.Alliance}] {x.Victim} on {x.KilledOn} ({(x.Power != null ? x.Power.Value.ToString() : "Unknown Power")})"));
+            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"[{x.Alliance}] {x.Victim} on {x.KilledOn} ({ x.Power}) [Img]({x.ImageLink})"));
 
             embed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM hh:mm")}", output);
 
@@ -277,7 +288,7 @@ namespace TRUEbot.Modules
             var victimAlliance = kills.First().Alliance;
             var embed = new EmbedBuilder();
 
-            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"[{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn} ({(x.Power != null ? x.Power.Value.ToString() : "Unknown Power")})"));
+            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"[{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn} ({ x.Power}) [Img]({x.ImageLink})"));
 
             embed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM hh:mm")}", output);
 

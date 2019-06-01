@@ -12,7 +12,7 @@ namespace TRUEbot.Services
     public interface IKillService
     {
        
-        Task<KillLogResult> AddKill(string playerName, string userUsername, int? power);
+        Task<KillLogResult> AddKill(string playerName, string userUsername, int power, string imageLink);
         Task<List<KillDto>> GetStatsForKiller(string userUsername, DateTime fromDate, DateTime toDate);
         Task<List<KillDto>> GetStatsForVictim(string playerName, DateTime fromDate, DateTime toDate);
         Task<List<KillDto>> GetStatsForVictimAlliance(string allianceName, DateTime fromDate, DateTime toDate);
@@ -29,7 +29,7 @@ namespace TRUEbot.Services
             _db = db;
         }
 
-        public async Task<KillLogResult> AddKill(string playerName, string userUsername, int? power)
+        public async Task<KillLogResult> AddKill(string playerName, string userUsername, int power, string imageLink)
         {
             var normalizedPlayerName = playerName.Normalise();
             var normalizedUsername = userUsername.Normalise();
@@ -45,10 +45,10 @@ namespace TRUEbot.Services
                     KilledByNormalised = normalizedUsername,
                     Player = player,
                     KilledOn = DateTime.Now,
-                    Power = power
+                    Power = power,
+                    ImageLink = imageLink
             });
 
-            
             await _db.SaveChangesAsync();
 
             return KillLogResult.OK;
@@ -68,7 +68,8 @@ namespace TRUEbot.Services
                     Alliance =  a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
-                    Power = a.Power
+                    Power = a.Power,
+                    ImageLink = a.ImageLink
                 }).ToListAsync();
         }
 
@@ -86,7 +87,8 @@ namespace TRUEbot.Services
                     Alliance =  a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
-                    Power = a.Power
+                    Power = a.Power,
+                    ImageLink = a.ImageLink
                 }).ToListAsync();
         }
 
@@ -104,7 +106,8 @@ namespace TRUEbot.Services
                     Alliance =  a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
-                    Power = a.Power
+                    Power = a.Power,
+                    ImageLink = a.ImageLink
                 }).ToListAsync();
         }
 
@@ -159,6 +162,7 @@ namespace TRUEbot.Services
         public string Victim { get; set; }
         public DateTime KilledOn { get; set; }
         public string KilledBy { get; set; }
-        public int? Power { get; set; }
+        public int Power { get; set; }
+        public string ImageLink { get; set; }
     }
 }

@@ -65,6 +65,8 @@ namespace TRUEbot
             await Task.Delay(-1);
         }
 
+   
+
         private static async Task HandleMessageReceived(SocketMessage messageReceived)
         {
             if (!(messageReceived is SocketUserMessage message))

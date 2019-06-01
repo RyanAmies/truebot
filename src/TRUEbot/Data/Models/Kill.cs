@@ -14,12 +14,17 @@ namespace TRUEbot.Data.Models
 
         public DateTime KilledOn { get; set; }
 
-        public int? Power { get; set; }
+        public int Power { get; set; }
 
         [Required]
         public string KilledBy { get; set; }
+
+        [Required]
         public string KilledByNormalised { get; set; }
         
         public virtual Player Player { get; set; }
+        
+        [Required]
+        public string ImageLink { get; set; }
     }
 }
