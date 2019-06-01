@@ -226,38 +226,6 @@ namespace TRUEbot.Modules
             return builders;
         }
 
-        [Command("help"), Summary("Gets the number of players a user has reported")]
-        [UsedImplicitly]
-        public async Task Help()
-        {
-            try
-            {
-                var textLines = HelpText.Text.Split(Environment.NewLine);
-                var current = string.Empty;
-
-                foreach (var text in textLines)
-                {
-                    
-                    if ((current + Environment.NewLine + text).Count() > 2000)
-                    {
-                        await ReplyAsync(current);
-                        current = string.Empty;
-                    }
-                    else
-                    {
-                        current += Environment.NewLine + text;
-                    }
-                }
-                await ReplyAsync(current);
-
-              
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed getting help text");
-            }
-        }
-
         private static EmbedBuilder BuildEmbed(string location, List<PlayerDto> players)
         {
             var embed = new EmbedBuilder()

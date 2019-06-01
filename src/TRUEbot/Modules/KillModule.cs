@@ -167,7 +167,7 @@ namespace TRUEbot.Modules
 
                 if (victimStats.Any())
                 {
-                    var victimEmbed = BuildVictimEmbed(victimStats, fromDate, toDate);
+                    var victimEmbed = BuildAllianceEmbed(victimStats, fromDate, toDate);
                     await ReplyAsync(embed: victimEmbed.Build());
                 }
                 else
@@ -265,6 +265,30 @@ namespace TRUEbot.Modules
             }
         }
 
+        [Command("delete"), Summary("Gets the stats for a killer")]
+        [UsedImplicitly]
+        public async Task Delete( int id)
+        {
+            try
+            {
+                var deleteResult = await _killService.DeleteKillRecordById(id);
+                if (deleteResult == DeleteKillResult.Ok)
+                {
+                    await Context.AddConfirmation();
+                }
+                else
+                {
+                    await ReplyAsync($"Could not find kill #{id}");
+
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed deleting kill");
+            }
+        }
+
      
         private static EmbedBuilder BuildKillCountLeaderBoardEmbed(List<LeaderboardDto> kills, int days, int leaderboardCount)
         {
@@ -314,9 +338,23 @@ namespace TRUEbot.Modules
             var victimAlliance = kills.First().Alliance;
             var embed = new EmbedBuilder();
 
-            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn} ({ x.Power}) [Img]({x.ImageLink})"));
+            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM hh:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})"));
 
             embed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM hh:mm")}", output);
+
+            embed.WithFooter($"{kills.Count} confirmed kills. {kills.Select(a => a.Power).DefaultIfEmpty(0).Sum().ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
+
+            return embed;
+        }
+
+        private static EmbedBuilder BuildAllianceEmbed(List<KillDto> kills, DateTime from, DateTime to)
+        {
+            var victimAlliance = kills.First().Alliance;
+            var embed = new EmbedBuilder();
+
+            var output = string.Join(Environment.NewLine, kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM hh:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})"));
+
+            embed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM hh:mm")}", output);
 
             embed.WithFooter($"{kills.Count} confirmed kills. {kills.Select(a => a.Power).DefaultIfEmpty(0).Sum().ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
 
@@ -327,7 +365,7 @@ namespace TRUEbot.Modules
         {
             var embed = new EmbedBuilder();
 
-            var output = $"#{killerStats.Id} [{killerStats.Alliance}] {killerStats.Victim} Killed By {killerStats.KilledBy} on {killerStats.KilledOn} ({ killerStats.Power.ToString("N0")}) [Img]({killerStats.ImageLink})";
+            var output = $"#{killerStats.Id} [{killerStats.Alliance}] {killerStats.Victim} Killed By {killerStats.KilledBy} on {killerStats.KilledOn.ToString("dd/MM hh:mm")} ({ killerStats.Power.ToString("N0")}) [Img]({killerStats.ImageLink})";
 
             embed.AddField($"Kill #{killerStats.Id}", output);
 

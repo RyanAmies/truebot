@@ -11,7 +11,7 @@ namespace TRUEbot.Services
 {
     public interface IKillService
     {
-       
+
         Task<KillLogResult> AddKill(string playerName, string userUsername, int power, string imageLink);
         Task<List<KillDto>> GetStatsForKiller(string userUsername, DateTime fromDate, DateTime toDate);
         Task<List<KillDto>> GetStatsForVictim(string playerName, DateTime fromDate, DateTime toDate);
@@ -19,6 +19,7 @@ namespace TRUEbot.Services
         Task<List<LeaderboardDto>> GetStatsForKillCountLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate);
         Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate);
         Task<KillDto> GetKillRecordById(int id);
+        Task<DeleteKillResult> DeleteKillRecordById(int id);
     }
 
     public class KillService : IKillService
@@ -42,12 +43,12 @@ namespace TRUEbot.Services
 
             _db.Kills.Add(new Kill
             {
-                    KilledBy = userUsername,
-                    KilledByNormalised = normalizedUsername,
-                    Player = player,
-                    KilledOn = DateTime.Now,
-                    Power = power,
-                    ImageLink = imageLink
+                KilledBy = userUsername,
+                KilledByNormalised = normalizedUsername,
+                Player = player,
+                KilledOn = DateTime.Now,
+                Power = power,
+                ImageLink = imageLink
             });
 
             await _db.SaveChangesAsync();
@@ -65,8 +66,9 @@ namespace TRUEbot.Services
                 .Where(a => a.KilledOn < toDate)
                 .Select(a => new KillDto
                 {
+                    Id = a.Id,
                     Victim = a.Player.Name,
-                    Alliance =  a.Player.Alliance,
+                    Alliance = a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
                     Power = a.Power,
@@ -86,7 +88,7 @@ namespace TRUEbot.Services
                 {
                     Id = a.Id,
                     Victim = a.Player.Name,
-                    Alliance =  a.Player.Alliance,
+                    Alliance = a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
                     Power = a.Power,
@@ -106,7 +108,7 @@ namespace TRUEbot.Services
                 {
                     Id = a.Id,
                     Victim = a.Player.Name,
-                    Alliance =  a.Player.Alliance,
+                    Alliance = a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
                     Power = a.Power,
@@ -119,14 +121,14 @@ namespace TRUEbot.Services
             return _db.Kills
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
-                .GroupBy(a => new { a.KilledByNormalised, a.KilledBy})
+                .GroupBy(a => new { a.KilledByNormalised, a.KilledBy })
 
                 .Select(a => new LeaderboardDto
                 {
                     Player = a.Key.KilledBy,
-                    TotalPower = a.Select(q=>q.Power).DefaultIfEmpty().Sum(),
+                    TotalPower = a.Select(q => q.Power).DefaultIfEmpty().Sum(),
                     TotalKills = a.Count(),
-                }).OrderByDescending(a=>a.TotalKills)
+                }).OrderByDescending(a => a.TotalKills)
                 .Take(leaderboardCount)
                 .ToListAsync();
         }
@@ -135,13 +137,13 @@ namespace TRUEbot.Services
             return _db.Kills
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
-                .GroupBy(a => new { a.KilledByNormalised, a.KilledBy})
+                .GroupBy(a => new { a.KilledByNormalised, a.KilledBy })
                 .Select(a => new LeaderboardDto
                 {
                     Player = a.Key.KilledBy,
-                    TotalPower = a.Select(q=>q.Power).DefaultIfEmpty().Sum(),
+                    TotalPower = a.Select(q => q.Power).DefaultIfEmpty().Sum(),
                     TotalKills = a.Count(),
-                }).OrderByDescending(a=>a.TotalPower)
+                }).OrderByDescending(a => a.TotalPower)
                 .Take(leaderboardCount)
                 .ToListAsync();
         }
@@ -154,13 +156,34 @@ namespace TRUEbot.Services
                 {
                     Id = a.Id,
                     Victim = a.Player.Name,
-                    Alliance =  a.Player.Alliance,
+                    Alliance = a.Player.Alliance,
                     KilledOn = a.KilledOn,
                     KilledBy = a.KilledBy,
                     Power = a.Power,
                     ImageLink = a.ImageLink
                 }).SingleOrDefaultAsync();
         }
+
+        public async Task<DeleteKillResult> DeleteKillRecordById(int id)
+        {
+            var kill = await _db.Kills
+                .Where(a => a.Id == id)
+                .SingleOrDefaultAsync();
+
+            if (kill == null)
+                return DeleteKillResult.Failed;
+
+            _db.Kills.Remove(kill);
+
+            return DeleteKillResult.Ok;
+
+        }
+    }
+
+    public enum DeleteKillResult
+    {
+        Ok,
+        Failed
     }
 
     public class LeaderboardDto

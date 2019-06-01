@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -36,11 +37,13 @@ namespace TRUEbot
 
             _serviceCollection.AddDbContext<EntityContext>(op => op.UseSqlite(configuration.GetConnectionString("TrueBot")));
 
+            _discordClient = CreateDiscordClient();
+
+            _serviceCollection.AddSingleton(new InteractiveService(_discordClient));
             _serviceCollection.AddScoped<IPlayerService, PlayerService>();
             _serviceCollection.AddScoped<IHitService, HitService>();
             _serviceCollection.AddScoped<IKillService, KillService>();
-
-            _discordClient = CreateDiscordClient();
+            _serviceCollection.AddScoped<IKillService, KillService>();
 
             _discordCommandService = CreateDiscordCommandService();
 
@@ -77,7 +80,7 @@ namespace TRUEbot
             if (!message.HasCharPrefix(COMMAND_PREFIX, ref commandPrefixPosition))
                 return;
 
-            var context = new CommandContext(_discordClient, message);
+            var context = new SocketCommandContext(_discordClient, message);
 
             using (var scope = _provider.CreateScope())
             {

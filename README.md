@@ -1,6 +1,6 @@
 # TRUEbot
 
-This is the offcial TRUE discord bot ran by InsaneRhino. If you have any issues PM him.
+This is the official TRUE discord bot ran by InsaneRhino. If you have any issues PM him.
 
 ## Commands
 
