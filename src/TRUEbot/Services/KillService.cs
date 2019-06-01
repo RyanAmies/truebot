@@ -18,6 +18,7 @@ namespace TRUEbot.Services
         Task<List<KillDto>> GetStatsForVictimAlliance(string allianceName, DateTime fromDate, DateTime toDate);
         Task<List<LeaderboardDto>> GetStatsForKillCountLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate);
         Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate);
+        Task<KillDto> GetKillRecordById(int id);
     }
 
     public class KillService : IKillService
@@ -83,6 +84,7 @@ namespace TRUEbot.Services
                 .Where(a => a.KilledOn < toDate)
                 .Select(a => new KillDto
                 {
+                    Id = a.Id,
                     Victim = a.Player.Name,
                     Alliance =  a.Player.Alliance,
                     KilledOn = a.KilledOn,
@@ -102,6 +104,7 @@ namespace TRUEbot.Services
                 .Where(a => a.KilledOn < toDate)
                 .Select(a => new KillDto
                 {
+                    Id = a.Id,
                     Victim = a.Player.Name,
                     Alliance =  a.Player.Alliance,
                     KilledOn = a.KilledOn,
@@ -142,6 +145,22 @@ namespace TRUEbot.Services
                 .Take(leaderboardCount)
                 .ToListAsync();
         }
+
+        public Task<KillDto> GetKillRecordById(int id)
+        {
+            return _db.Kills
+                .Where(a => a.Id == id)
+                .Select(a => new KillDto
+                {
+                    Id = a.Id,
+                    Victim = a.Player.Name,
+                    Alliance =  a.Player.Alliance,
+                    KilledOn = a.KilledOn,
+                    KilledBy = a.KilledBy,
+                    Power = a.Power,
+                    ImageLink = a.ImageLink
+                }).SingleOrDefaultAsync();
+        }
     }
 
     public class LeaderboardDto
@@ -158,6 +177,7 @@ namespace TRUEbot.Services
     }
     public class KillDto
     {
+        public int Id { get; set; }
         public string Alliance { get; set; }
         public string Victim { get; set; }
         public DateTime KilledOn { get; set; }
