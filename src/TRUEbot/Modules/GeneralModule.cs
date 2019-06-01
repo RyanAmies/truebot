@@ -226,6 +226,21 @@ namespace TRUEbot.Modules
             return builders;
         }
 
+        [Command("help"), Summary("Gets the number of players a user has reported")]
+        [UsedImplicitly]
+        public async Task Help()
+        {
+            try
+            {
+               await ReplyAsync(HelpText.Text);
+               await ReplyAsync(HelpText.Text2);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed getting help text");
+            }
+        }
+
         private static EmbedBuilder BuildEmbed(string location, List<PlayerDto> players)
         {
             var embed = new EmbedBuilder()

@@ -28,18 +28,7 @@ namespace TRUEbot
         {
             Log.Logger = CreateLogger();
 
-            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
-            var pathToAppSettings = Path.Combine(Directory.GetCurrentDirectory());
-
-            Log.Debug("Working with path {path}", pathToAppSettings);
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(pathToAppSettings)
-                .AddJsonFile("appsettings.json", false)
-                .AddJsonFile($"appsettings.{environmentName}.json", true)
-                .AddEnvironmentVariables()
-                .Build();
+            var configuration = BotConfigurationBuilder.Build();
 
             var discordToken = configuration["DiscordToken"];
 

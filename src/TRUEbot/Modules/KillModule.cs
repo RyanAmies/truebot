@@ -100,6 +100,11 @@ namespace TRUEbot.Modules
             }
         }
 
+        
+        [Command("killerstats"), Summary("Gets the stats for a victim")]
+        [UsedImplicitly]
+        public Task KillerStats() => KillerStats(Context.User.Username, 1);
+
         [Command("killerstats"), Summary("Gets the stats for a victim")]
         [UsedImplicitly]
         public Task KillerStats(string playerName) => KillerStats(playerName, 1);

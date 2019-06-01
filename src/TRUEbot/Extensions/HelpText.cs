@@ -1,4 +1,12 @@
-# TRUEbot
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TRUEbot.Extensions
+{
+    public static class HelpText
+    {
+        public static string Text = @"# TRUEbot
 
 This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues PM him.
 
@@ -30,11 +38,10 @@ This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues P
 
 `!location {name}` gets all players in the location
 
-`!spot {playerName} {locationName}` alias to the player command, updates the location of the player
+`!spot {playerName} {locationName}` alias to the player command, updates the location of the player";
 
-`!missing {playerName}` marks the player as not in their current location
 
-### Stats
+         public static string Text2 = @"### Stats
 
 `!stats` gets all the players the user has reported
 
@@ -66,9 +73,6 @@ This is the offial TRUE discord bot ran by InsaneRhino. If you have any issues P
 
 `!kill topkills` get the top 10 killers for the last day ordered by power destroyed
 
-`!kill topkills {days}` get the top 10 killers over a period of {days} ordered by power destroyed
-
-### General
-
-`!help` displays help text
-
+`!kill topkills {days}` get the top 10 killers over a period of {days} ordered by power destroyed";
+    }
+}

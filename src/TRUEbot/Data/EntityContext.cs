@@ -5,14 +5,6 @@ namespace TRUEbot.Data
 {
     public class EntityContext : DbContext
     {
-        public EntityContext()
-        {
-            
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("Data Source=truebot.db");
-        }
         public EntityContext(DbContextOptions<EntityContext> options)
             : base(options)
         { }
