@@ -441,7 +441,7 @@ namespace TRUEbot.Modules
                 {
                     var embed = new EmbedBuilder();
 
-                    embed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM hh:mm")}", pageText);
+                    embed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}", pageText);
 
 
                     embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
@@ -460,7 +460,7 @@ namespace TRUEbot.Modules
 
             var finalEmbed = new EmbedBuilder();
 
-            finalEmbed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM hh:mm")}", pageText);
+            finalEmbed.AddField($"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}", pageText);
             
             finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
 
@@ -490,13 +490,13 @@ namespace TRUEbot.Modules
 
             foreach (var x in kills.OrderByDescending(a => a.KilledOn))
             {
-                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM hh:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
+                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
 
                 if (pageText.Length + text.Length > LIMIT)
                 {
                     var embed = new EmbedBuilder();
 
-                    embed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM hh:mm")}", pageText);
+                    embed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM HH:mm")}", pageText);
 
 
                     embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
@@ -515,7 +515,7 @@ namespace TRUEbot.Modules
 
             var finalEmbed = new EmbedBuilder();
 
-            finalEmbed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM hh:mm")}", pageText);
+            finalEmbed.AddField($"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM HH:mm")}", pageText);
             
             finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
 
@@ -544,13 +544,13 @@ namespace TRUEbot.Modules
 
             foreach (var x in kills.OrderByDescending(a => a.KilledOn))
             {
-                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM hh:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
+                var text = $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})";
 
                 if (pageText.Length + text.Length > LIMIT)
                 {
                     var embed = new EmbedBuilder();
 
-                    embed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM hh:mm")}", pageText);
+                    embed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM HH:mm")}", pageText);
 
 
                     embed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
@@ -569,7 +569,7 @@ namespace TRUEbot.Modules
 
             var finalEmbed = new EmbedBuilder();
 
-            finalEmbed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM hh:mm")}", pageText);
+            finalEmbed.AddField($"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM HH:mm")}", pageText);
             
             finalEmbed.WithFooter($"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.").WithColor(new Color(95, 186, 125));
 
@@ -593,7 +593,7 @@ namespace TRUEbot.Modules
         {
             var embed = new EmbedBuilder();
 
-            var output = $"#{killerStats.Id} [{killerStats.Alliance}] {killerStats.Victim} Killed By {killerStats.KilledBy} on {killerStats.KilledOn.ToString("dd/MM hh:mm")} ({ killerStats.Power.ToString("N0")}) [Img]({killerStats.ImageLink})";
+            var output = $"#{killerStats.Id} [{killerStats.Alliance}] {killerStats.Victim} Killed By {killerStats.KilledBy} on {killerStats.KilledOn.ToString("dd/MM HH:mm")} ({ killerStats.Power.ToString("N0")}) [Img]({killerStats.ImageLink})";
 
             embed.AddField($"Kill #{killerStats.Id}", output);
 
