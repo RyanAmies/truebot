@@ -338,8 +338,14 @@ namespace TRUEbot.Modules
         {
             var embed = new EmbedBuilder().WithTitle($"Summary Stats for {killer}");
 
-            embed.AddField("Last 24 Hours", $"Kills: {summaryStats.TotalKills24Hours} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPower24Hours.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPower24Hours / summaryStats.TotalKills24Hours).ToString("N0")}");
-            embed.AddField("Global Stats", $"Kills: {summaryStats.TotalKillsAllTime} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPowerAllTime.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPowerAllTime / summaryStats.TotalKillsAllTime).ToString("N0")}");
+            embed.AddField($"{killer} Last 24 Hours", $"Kill Count: {summaryStats.TotalKills24Hours} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPower24Hours.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPower24Hours / summaryStats.TotalKills24Hours).ToString("N0")}");
+            embed.AddField($"{killer} Global", $"Kill Count: {summaryStats.TotalKillsAllTime} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPowerAllTime.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPowerAllTime / summaryStats.TotalKillsAllTime).ToString("N0")}");
+            
+            embed.AddField($"{victim} Last 24 Hours", $"Death Count: {summaryStats.VictimKills24Hours} {Environment.NewLine}Power Destroyed: {summaryStats.VictimPower24Hours.ToString("N0")} {Environment.NewLine}");
+            embed.AddField($"{victim} Global", $"Death Count: {summaryStats.VictimKillsAllTime} {Environment.NewLine}Power Destroyed: {summaryStats.VictimPowerAllTime.ToString("N0")} {Environment.NewLine}");
+
+            embed.AddField($"{summaryStats.VictimAllianceName} Last 24 Hours", $"Death Count: {summaryStats.VictimAllianceKills24Hours} {Environment.NewLine}Power Destroyed: {summaryStats.VictimAlliancePower24Hours.ToString("N0")} {Environment.NewLine}");
+            embed.AddField($"{summaryStats.VictimAllianceName} Global", $"Death Count: {summaryStats.VictimAllianceKillsAllTime} {Environment.NewLine}Power Destroyed: {summaryStats.VictimAlliancePowerAllTime.ToString("N0")} {Environment.NewLine}");
 
             return embed;
         }

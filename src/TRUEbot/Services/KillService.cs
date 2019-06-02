@@ -180,14 +180,15 @@ namespace TRUEbot.Services
 
         }
 
-        public Task<SummaryStatsDto> GetSummaryStatsForKiller(string userUsername, string playerName)
+        public async Task<SummaryStatsDto> GetSummaryStatsForKiller(string userUsername, string playerName)
         {
-            var normalised = userUsername.Normalise();
-            
+            var normalisedUser = userUsername.Normalise();
+            var normalisedPlayer = playerName.Normalise();
+
             var yesterday = DateTime.Now.AddDays(-1);
 
-            var dto = _db.Kills
-                .Where(a=>a.KilledByNormalised == normalised)
+            var dto =await  _db.Kills
+                .Where(a=>a.KilledByNormalised == normalisedUser)
                 .GroupBy(a=>a.KilledBy)
                 .Select(a => new SummaryStatsDto
                 {
@@ -199,6 +200,42 @@ namespace TRUEbot.Services
                     
                 }).SingleAsync();
 
+            var player =await  _db.Players.Where(a => a.NormalizedName == normalisedPlayer).SingleAsync();
+            dto.VictimKills24Hours = await _db.Kills
+                .Where(a => a.Player == player)
+                .Where(a => a.KilledOn >= yesterday)
+                .CountAsync();
+            dto.VictimPower24Hours = await _db.Kills
+                .Where(a => a.Player == player)
+                .Where(a => a.KilledOn >= yesterday)
+                .Select(a=>a.Power).SumAsync();
+
+            dto.VictimKillsAllTime = await _db.Kills
+                .Where(a => a.Player == player)
+                .CountAsync();
+            dto.VictimPowerAllTime = await _db.Kills
+                .Where(a => a.Player == player)
+                .Select(a=>a.Power).SumAsync();
+
+            dto.VictimAllianceKills24Hours = await _db.Kills
+                .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
+                .Where(a => a.KilledOn >= yesterday)
+                .CountAsync();
+            dto.VictimAlliancePower24Hours = await _db.Kills
+                .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
+                .Where(a => a.KilledOn >= yesterday)
+                .Select(a=>a.Power).SumAsync();
+
+            dto.VictimAllianceKillsAllTime = await _db.Kills
+                .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
+                .CountAsync();
+            dto.VictimAlliancePowerAllTime = await _db.Kills
+                .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
+                .Select(a=>a.Power).SumAsync();
+
+            dto.VictimAllianceName = player.Alliance;
+
+
             return dto;
         }
     }
@@ -207,9 +244,20 @@ namespace TRUEbot.Services
     {
         public int TotalKillsAllTime { get; set; }
         public int TotalKills24Hours { get; set; }
-
         public int TotalPowerAllTime { get; set; }
         public int TotalPower24Hours { get; set; }
+
+        public int VictimKills24Hours { get; set; }
+        public int VictimKillsAllTime { get; set; }
+        public int VictimPower24Hours { get; set; }
+        public int VictimPowerAllTime { get; set; }
+
+        public int VictimAllianceKills24Hours { get; set; }
+        public int VictimAlliancePower24Hours { get; set; }
+        public int VictimAllianceKillsAllTime { get; set; }
+        public int VictimAlliancePowerAllTime { get; set; }
+
+        public string VictimAllianceName { get; set; }
     }
 
     public enum DeleteKillResult
