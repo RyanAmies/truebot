@@ -20,6 +20,7 @@ namespace TRUEbot.Services
         Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate);
         Task<KillDto> GetKillRecordById(int id);
         Task<DeleteKillResult> DeleteKillRecordById(int id);
+        Task<SummaryStatsDto> GetSummaryStatsForKiller(string userUsername, string playerName);
     }
 
     public class KillService : IKillService
@@ -178,6 +179,37 @@ namespace TRUEbot.Services
             return DeleteKillResult.Ok;
 
         }
+
+        public Task<SummaryStatsDto> GetSummaryStatsForKiller(string userUsername, string playerName)
+        {
+            var normalised = userUsername.Normalise();
+            
+            var yesterday = DateTime.Now.AddDays(-1);
+
+            var dto = _db.Kills
+                .Where(a=>a.KilledByNormalised == normalised)
+                .GroupBy(a=>a.KilledBy)
+                .Select(a => new SummaryStatsDto
+                {
+                    TotalKills24Hours = a.Where(r=>r.KilledOn>=yesterday).Count(),
+                    TotalKillsAllTime = a.Count(),
+                    
+                    TotalPower24Hours = a.Where(r=>r.KilledOn>=yesterday).Select(t=>t.Power).DefaultIfEmpty().Sum(),
+                    TotalPowerAllTime = a.Select(r=>r.Power).DefaultIfEmpty().Sum(),
+                    
+                }).SingleAsync();
+
+            return dto;
+        }
+    }
+
+    public class SummaryStatsDto
+    {
+        public int TotalKillsAllTime { get; set; }
+        public int TotalKills24Hours { get; set; }
+
+        public int TotalPowerAllTime { get; set; }
+        public int TotalPower24Hours { get; set; }
     }
 
     public enum DeleteKillResult

@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Core;
 using TRUEbot.Data;
+using TRUEbot.Extensions;
 using TRUEbot.Services;
 
 namespace TRUEbot
@@ -78,7 +79,9 @@ namespace TRUEbot
             var commandPrefixPosition = 0;
 
             if (!message.HasCharPrefix(COMMAND_PREFIX, ref commandPrefixPosition))
+            {
                 return;
+            }
 
             var context = new SocketCommandContext(_discordClient, message);
 
@@ -88,6 +91,8 @@ namespace TRUEbot
 
                 if (!result.IsSuccess)
                 {
+                    await message.AddReactionAsync(CommandContextExtensions.CrossEmoji);
+
                     Log.Error("Something went wrong while running the command: {returnedMessage}", result);
                 }
             }

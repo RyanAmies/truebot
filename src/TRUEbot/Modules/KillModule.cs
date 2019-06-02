@@ -30,6 +30,8 @@ namespace TRUEbot.Modules
         {
             if (Context.Message.Attachments.Any() == false)
             {
+                await Context.AddRejection();
+
                 await ReplyAsync($"You must post a picture of the kill, or a link to the image");
                 return;
             }
@@ -44,11 +46,14 @@ namespace TRUEbot.Modules
         {
             try
             {
+
                 var result = await _killService.AddKill(playerName, Context.User.Username, power, imageLink);
 
                 if (result == KillLogResult.CannotFindPlayer)
                 {
+                    await Context.AddRejection();
                     await ReplyAsync($"Cannot find player by that name. They must be added to the bot first with '!add {playerName}'");
+
                     return;
                 }
 
@@ -57,26 +62,11 @@ namespace TRUEbot.Modules
                     await Context.AddConfirmation();
                 }
 
-                var toDate = DateTime.Now;
-                var fromDate = DateTime.Now.AddDays(-1);
-
-                var killersStats = await _killService.GetStatsForKiller(Context.User.Username, fromDate, toDate);
-
-                var killerEmbed = BuildKillerEmbed(Context.User.Username, killersStats, fromDate, toDate);
+                var summaryStats = await _killService.GetSummaryStatsForKiller(Context.User.Username, playerName);
                 
-                foreach (var embed in killerEmbed)
-                {
-                    await ReplyAsync(embed: embed.Build());
-                }
+                var summaryEmbed = BuildSummaryStatsEmbed(Context.User.Username, playerName, summaryStats);
 
-
-                var victimStats = await _killService.GetStatsForVictim(playerName, fromDate, toDate);
-                var victimEmbed = BuildVictimEmbed(victimStats, fromDate);
-                foreach (var embed in victimEmbed)
-                {
-                    await ReplyAsync(embed: embed.Build());
-                }
-
+                    await ReplyAsync(embed: summaryEmbed.Build());
             }
             catch (Exception ex)
             {
@@ -343,7 +333,18 @@ namespace TRUEbot.Modules
         }
        
 
-     
+        private static EmbedBuilder BuildSummaryStatsEmbed(string killer, string victim,
+            SummaryStatsDto summaryStats)
+        {
+            var embed = new EmbedBuilder().WithTitle($"Summary Stats for {killer}");
+
+            embed.AddField("Last 24 Hours", $"Kills: {summaryStats.TotalKills24Hours} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPower24Hours.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPower24Hours / summaryStats.TotalKills24Hours).ToString("N0")}");
+            embed.AddField("Global Stats", $"Kills: {summaryStats.TotalKillsAllTime} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPowerAllTime.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPowerAllTime / summaryStats.TotalKillsAllTime).ToString("N0")}");
+
+            return embed;
+        }
+
+
         private static List<EmbedBuilder> BuildKillerEmbed(string player, List<KillDto> kills, DateTime from, DateTime to)
         {
             var title =$"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}";
