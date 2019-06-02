@@ -24,7 +24,7 @@ namespace TRUEbot.Modules
             _killService = killService;
         }
 
-        [Command("log"), Summary("Marks a player as killed")]
+        [Command("log"), Alias("add",""), Summary("Marks a player as killed")]
         [UsedImplicitly]
         public async Task Get(string playerName, int power)
         {
@@ -40,7 +40,7 @@ namespace TRUEbot.Modules
             await Get(playerName, power,fn);
         }
 
-        [Command("log") ,Summary("Marks a player as killed")]
+        [Command("log"), Alias("add","") ,Summary("Marks a player as killed")]
         [UsedImplicitly]
         public async Task Get(string playerName, int power, string imageLink)
         {
