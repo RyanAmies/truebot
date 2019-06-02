@@ -336,7 +336,7 @@ namespace TRUEbot.Modules
         private static EmbedBuilder BuildSummaryStatsEmbed(string killer, string victim,
             SummaryStatsDto summaryStats)
         {
-            var embed = new EmbedBuilder().WithTitle($"Summary Stats for {killer}");
+            var embed = new EmbedBuilder().WithTitle($"Confirming Kill Number #{summaryStats.LastKillId} by {killer}").WithColor(new Color(95, 186, 125));
 
             embed.AddField($"{killer} Last 24 Hours", $"Kill Count: {summaryStats.TotalKills24Hours} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPower24Hours.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPower24Hours / summaryStats.TotalKills24Hours).ToString("N0")}");
             embed.AddField($"{killer} Global", $"Kill Count: {summaryStats.TotalKillsAllTime} {Environment.NewLine}Power Destroyed: {summaryStats.TotalPowerAllTime.ToString("N0")} {Environment.NewLine}Average: {(summaryStats.TotalPowerAllTime / summaryStats.TotalKillsAllTime).ToString("N0")}");

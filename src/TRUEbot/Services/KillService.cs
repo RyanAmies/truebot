@@ -235,7 +235,8 @@ namespace TRUEbot.Services
 
             dto.VictimAllianceName = player.Alliance;
 
-
+            dto.LastKillId = await _db.Kills.Where(a => a.KilledByNormalised == normalisedUser)
+                .OrderByDescending(a => a.KilledOn).Select(a => a.Id).FirstAsync();
             return dto;
         }
     }
@@ -258,6 +259,7 @@ namespace TRUEbot.Services
         public int VictimAlliancePowerAllTime { get; set; }
 
         public string VictimAllianceName { get; set; }
+        public int LastKillId { get; set; }
     }
 
     public enum DeleteKillResult
