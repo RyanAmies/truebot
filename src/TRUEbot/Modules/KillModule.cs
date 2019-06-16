@@ -52,7 +52,7 @@ namespace TRUEbot.Modules
                 if (result == KillLogResult.CannotFindPlayer)
                 {
                     await Context.AddRejection();
-                    await ReplyAsync($"Cannot find player by that name. They must be added to the bot first with '!add {playerName}'");
+                    await ReplyAsync($"Cannot find player by that name. They must be added to the bot first with '!p add {playerName}'");
 
                     return;
                 }
