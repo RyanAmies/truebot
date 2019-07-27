@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
@@ -44,7 +45,6 @@ namespace TRUEbot
             _serviceCollection.AddScoped<IPlayerService, PlayerService>();
             _serviceCollection.AddScoped<IHitService, HitService>();
             _serviceCollection.AddScoped<IKillService, KillService>();
-            _serviceCollection.AddScoped<IKillService, KillService>();
 
             _discordCommandService = CreateDiscordCommandService();
 
@@ -69,12 +69,19 @@ namespace TRUEbot
             await Task.Delay(-1);
         }
 
-   
-
         private static async Task HandleMessageReceived(SocketMessage messageReceived)
         {
+            if (messageReceived.Author.IsBot)
+                return;
+
             if (!(messageReceived is SocketUserMessage message))
                 return;
+
+            if (message.Channel is IDMChannel)
+            {
+                await HandleDmMessage(message);
+                return;
+            }
 
             var commandPrefixPosition = 0;
 
@@ -96,6 +103,25 @@ namespace TRUEbot
                     Log.Error("Something went wrong while running the command: {returnedMessage}", result);
                 }
             }
+        }
+
+        private static async Task HandleDmMessage(SocketUserMessage message)
+        {
+            var user = _discordClient.GetUser(434439379180716064);
+
+            if (user != null)
+            {
+                await user.SendMessageAsync($"{message.Content} sent by {message.Author}");
+            }
+
+            var guild = _discordClient.Guilds.FirstOrDefault();
+
+            var channel = guild?.GetTextChannel(604789293877035009);
+
+            if (channel == null)
+                return;
+
+            await channel.SendMessageAsync(message.Content);
         }
 
         private static Task HandleDiscordLog(LogMessage arg)
