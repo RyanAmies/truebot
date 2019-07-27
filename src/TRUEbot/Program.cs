@@ -66,7 +66,26 @@ namespace TRUEbot
             await _discordClient.StartAsync();
 
             // Start an infinite delay to wait for, so we don't shut down
+
+            await StartupMessage();
+
             await Task.Delay(-1);
+        }
+
+        private static async Task StartupMessage()
+        {
+            await Task.Delay(2000);
+            var guild = _discordClient.Guilds.FirstOrDefault();
+
+            var channel = guild?.GetTextChannel(604789293877035009);
+
+            if (channel == null)
+                channel = guild?.GetTextChannel(541693085390733317);
+
+            if (channel == null)
+                return;
+
+            await channel.SendMessageAsync("TrueBot Online!");  
         }
 
         private static async Task HandleMessageReceived(SocketMessage messageReceived)
@@ -126,7 +145,7 @@ namespace TRUEbot
 
         private static Task HandleDiscordLog(LogMessage arg)
         {
-            switch(arg.Severity)
+            switch (arg.Severity)
             {
                 case LogSeverity.Critical:
                     Log.Fatal(arg.Exception, arg.Message);
