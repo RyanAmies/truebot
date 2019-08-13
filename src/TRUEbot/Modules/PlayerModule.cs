@@ -296,7 +296,7 @@ namespace TRUEbot.Modules
 
             if (player.SystemLogs.Any())
             {
-                var locationLogs = player.SystemLogs.OrderByDescending(a=>a.DateUpdated).Select(s =>
+                var locationLogs = player.SystemLogs.Take(5).OrderByDescending(a=>a.DateUpdated).Select(s =>
                         $"{s.SystemName} ({s.SystemLevel}) - {s.SystemFaction} on {s.DateUpdated:dd/MM/yy HH:mm}"+Environment.NewLine).ToList();
                 embed.AddField("Previous Locations", string.Join("",locationLogs));
 
@@ -305,6 +305,8 @@ namespace TRUEbot.Modules
             embed.WithFooter(GetPostedMeta(player)).WithColor(new Color(95, 186, 125));
 
             return embed;
+
+
         }
 
         private static string GetPostedMeta(PlayerDto player) => $"Tracking since {player.AddedDate:dd/MM/yy HH:mm}, last updated: {player.UpdatedDate:dd/MM/yy HH:mm}";

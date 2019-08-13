@@ -23,11 +23,11 @@ namespace TRUEbot.Modules
         }
 
       
-        [Command("victims"), Alias("victimstats"),Summary("Gets the stats for a victim")]
+        [Command("victims"), Alias("victimstats","victim"),Summary("Gets the stats for a victim")]
         [UsedImplicitly]
         public Task VictimStats(string playerName) => VictimStats(playerName, 1);
 
-        [Command("victims"), Alias("victimstats"),Summary("Gets the stats for a victim")]
+        [Command("victims"), Alias("victimstats","victim"),Summary("Gets the stats for a victim")]
         [UsedImplicitly]
         public async Task VictimStats(string playerName, int days)
         {
@@ -140,16 +140,16 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("kills"), Alias("topkiller"), Summary("Gets the the top killers")]
+        [Command("kills"), Alias("topkiller","topkills"), Summary("Gets the the top killers")]
         [UsedImplicitly]
         public Task TopKills() => TopKills(1);
 
         
-        [Command("kills"), Alias("topkiller"), Summary("Gets the the top killers")]
+        [Command("kills"), Alias("topkiller","topkills"), Summary("Gets the the top killers")]
         [UsedImplicitly]
         public Task TopKills(int days) => TopKills(days, null);
 
-        [Command("kills"), Alias("topkiller"), Summary("Gets the stats for a killer"), Priority(-1)]
+        [Command("kills"), Alias("topkiller","topkills"), Summary("Gets the stats for a killer"), Priority(-1)]
         [UsedImplicitly]
         public async Task TopKills( int days, string alliance)
         {
@@ -168,6 +168,10 @@ namespace TRUEbot.Modules
                         await ReplyAsync(embed: embedBuilder.Build());
                     }
                 }
+                else
+                {
+                    await ReplyAsync($"No confirmed kills");
+                }
                
             }
             catch (Exception ex)
@@ -182,7 +186,7 @@ namespace TRUEbot.Modules
 
         [Command("power"),Alias("toppower"), Summary("Gets the leaders for power destroyed in the last day")]
         [UsedImplicitly]
-        public Task TopPower(int days) => TopPower(1, null);
+        public Task TopPower(int days) => TopPower(days, null);
 
         [Command("power"),Alias("toppower"), Summary("Gets the leaders for power destroyed in the last day")]
         [UsedImplicitly]
@@ -202,6 +206,9 @@ namespace TRUEbot.Modules
                     {
                         await ReplyAsync(embed: embedBuilder.Build());
                     }
+                }   else
+                {
+                    await ReplyAsync($"No confirmed kills");
                 }
                
             }
