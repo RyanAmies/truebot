@@ -77,11 +77,11 @@ namespace TRUEbot
             await Task.Delay(2000);
             var guild = _discordClient.Guilds.FirstOrDefault();
 
-            var channel = guild?.GetTextChannel(604789293877035009);
+            var channel = guild?.GetTextChannel(541376685183074314);
 
             if (channel == null)
                 channel = guild?.GetTextChannel(541693085390733317);
-
+            
             if (channel == null)
                 return;
 

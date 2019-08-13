@@ -15,12 +15,10 @@ namespace TRUEbot.Modules
     [Group("kill")]
     public class KillModule : ModuleBase
     {
-        private readonly IPlayerService _playerService;
         private readonly IKillService _killService;
 
-        public KillModule(IPlayerService playerService, IKillService killService)
+        public KillModule(IKillService killService)
         {
-            _playerService = playerService;
             _killService = killService;
         }
 
@@ -82,34 +80,9 @@ namespace TRUEbot.Modules
         [UsedImplicitly]
         public async Task VictimStats(string playerName, int days)
         {
-            try
-            {
+            await Context.AddRejection();
 
-                var toDate = DateTime.Now;
-                var fromDate = DateTime.Now.AddDays(-days);
-
-                var victimStats = await _killService.GetStatsForVictim(playerName, fromDate, toDate);
-
-                if (victimStats.Any())
-                {
-                    var victimEmbed = BuildVictimEmbed(victimStats, fromDate);
-                    foreach (var embed in victimEmbed)
-                    {
-                        await ReplyAsync(embed: embed.Build());
-                    }
-
-                }
-                else
-                {
-                    await ReplyAsync($"No confirmed kills for {playerName}");
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed logging kill");
-            }
+            await ReplyAsync($"Use !killstats instead");
         }
 
         
@@ -125,32 +98,9 @@ namespace TRUEbot.Modules
         [UsedImplicitly]
         public async Task KillerStats(string playerName, int days)
         {
-            try
-            {
+            await Context.AddRejection();
 
-                var toDate = DateTime.Now;
-                var fromDate = DateTime.Now.AddDays(-days);
-
-                var killerStats = await _killService.GetStatsForKiller(playerName, fromDate, toDate);
-                if (killerStats.Any())
-                {
-                    var killerEmbed = BuildKillerEmbed(playerName, killerStats, fromDate, toDate);
-                    foreach (var embed in killerEmbed)
-                    {
-                        await ReplyAsync(embed: embed.Build());
-                    }
-                }
-                else
-                {
-                    await ReplyAsync($"No confirmed kills for {playerName}");
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed logging kill");
-            }
+            await ReplyAsync($"Use !killstats instead");
         }
 
         [Command("alliancestats"), Summary("Gets the stats for an alliance")]
@@ -161,34 +111,9 @@ namespace TRUEbot.Modules
         [UsedImplicitly]
         public async Task AllianceStats(string allianceName, int days)
         {
-            try
-            {
+            await Context.AddRejection();
 
-                var toDate = DateTime.Now;
-                var fromDate = DateTime.Now.AddDays(-days);
-
-                var victimStats = await _killService.GetStatsForVictimAlliance(allianceName, fromDate, toDate);
-
-                if (victimStats.Any())
-                {
-                   var allianceEmbed = BuildAllianceEmbed(victimStats, fromDate, toDate);
-                   foreach (var embed in allianceEmbed)
-                   {
-                       await ReplyAsync(embed: embed.Build());
-                   }
-
-                }
-                else
-                {
-                    await ReplyAsync($"No confirmed kills for {allianceName.ToUpper()}");
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed logging kill");
-            }
+            await ReplyAsync($"Use !killstats instead");
         }
 
         [Command("topkills"), Alias("topkiller"), Summary("Gets the the top killers")]
@@ -204,27 +129,9 @@ namespace TRUEbot.Modules
         [UsedImplicitly]
         public async Task TopKills( int days, string alliance)
         {
-            try
-            {
+            await Context.AddRejection();
 
-                var toDate = DateTime.Now;
-                var fromDate = DateTime.Now.AddDays(-days);
-
-                var killerStats = await _killService.GetStatsForKillCountLeaderboard(10, fromDate, toDate, alliance);
-                if (killerStats.Any())
-                {
-                    var killerEmbed = BuildKillCountLeaderBoardEmbed(killerStats, days,10, alliance);
-                    foreach (var embedBuilder in killerEmbed)
-                    {
-                        await ReplyAsync(embed: embedBuilder.Build());
-                    }
-                }
-               
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed logging kill");
-            }
+            await ReplyAsync($"Use !killstats instead");
         }
 
         [Command("toppower"), Summary("Gets the leaders for power destroyed in the last day")]
@@ -239,27 +146,9 @@ namespace TRUEbot.Modules
         [UsedImplicitly]
         public async Task TopPower(int days, string alliance)
         {
-            try
-            {
+            await Context.AddRejection();
 
-                var toDate = DateTime.Now;
-                var fromDate = DateTime.Now.AddDays(-days);
-
-                var killerStats = await _killService.GetStatsForPowderDestroyedLeaderboard(10, fromDate, toDate,alliance);
-                if (killerStats.Any())
-                {
-                    var killerEmbed = BuildPowerDestroyedLeaderBoardEmbed(killerStats, days, 10, alliance);
-                    foreach (var embedBuilder in killerEmbed)
-                    {
-                        await ReplyAsync(embed: embedBuilder.Build());
-                    }
-                }
-               
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed logging kill");
-            }
+            await ReplyAsync($"Use !killstats instead");
         }
 
 
@@ -314,40 +203,7 @@ namespace TRUEbot.Modules
         }
 
      
-      
-        private static List<EmbedBuilder> BuildKillCountLeaderBoardEmbed(List<LeaderboardDto> kills, int days,
-            int leaderboardCount, string alliance)
-        {
-            var title = $"Top {leaderboardCount} Killers by Kill Count for the last {days} days";
-            if (alliance != null)
-                title += " VS " + alliance;
-
-            var footer = $"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.";
-
-            int index = 1;
-
-            var dataRows = kills.OrderByDescending(a => a.TotalKills).Select(x => $"{index++}. {x.Player} with {x.TotalKills.ToString("N0")} kills ({(x.TotalPower / x.TotalKills).ToString("N0")} average)").ToList();
-            
-            return EmbedPaginator.Paginate(dataRows,title,"Top Killers",footer);
-        }
-
-        
-
-        private static List<EmbedBuilder> BuildPowerDestroyedLeaderBoardEmbed(List<LeaderboardDto> kills, int days,
-            int leaderboardCount, string alliance)
-        {
-            var title = $"Top {leaderboardCount} Killers by Power Destroyed for the last {days} days";
-            if (alliance != null)
-                title += " VS " + alliance;
-
-            var footer = $"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.";
-
-            int index = 1;
-
-            var dataRows = kills.OrderByDescending(a => a.TotalPower).Select(x => $"{index++}. {x.Player} with {x.TotalPower.ToString("N0")} power ({(x.TotalPower / x.TotalKills).ToString("N0")} average)").ToList();
-            
-            return EmbedPaginator.Paginate(dataRows,title,"Top Killers",footer);
-        }
+     
        
 
         private static EmbedBuilder BuildSummaryStatsEmbed(string killer, string victim,
@@ -366,46 +222,7 @@ namespace TRUEbot.Modules
 
             return embed;
         }
-
-
-        private static List<EmbedBuilder> BuildKillerEmbed(string player, List<KillDto> kills, DateTime from, DateTime to)
-        {
-            var title =$"Killer Stats for {player} since {from.ToString("dd/MM HH:mm")}";
-            var footer = $"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.";
-            
-            var dataRows = kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} on {x.KilledOn.ToString("dd/MM HH:mm")} ({ x.Power.ToString("N0")}) [Img]({x.ImageLink})").ToList();
-            
-            return EmbedPaginator.Paginate(dataRows,title,"Confirmed Kills",footer);
-        }
-    
-       
-        private static List<EmbedBuilder> BuildVictimEmbed(List<KillDto> kills, DateTime from)
-        {
-            var victimName = kills.First().Victim;
-            var victimAlliance = kills.First().Alliance;
-
-            var title = $"Victim Stats for [{victimAlliance}] {victimName} since {from.ToString("dd/MM HH:mm")}";
-            var footer = $"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.";
-            
-            var dataRows = kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({x.Power.ToString("N0")}) [Img]({x.ImageLink})").ToList();
-            
-            return EmbedPaginator.Paginate(dataRows,title,"Confirmed Kills",footer);
-        }
-
-        private static List<EmbedBuilder> BuildAllianceEmbed(List<KillDto> kills, DateTime from, DateTime to)
-        {
-            var victimAlliance = kills.First().Alliance;
-
-            var title = $"Victim Stats for [{victimAlliance}] since {from.ToString("dd/MM HH:mm")}";
-            var footer = $"{kills.Count} kills. {kills.Sum(a=>a.Power).ToString("N0")} power destroyed.";
-            
-            var dataRows = kills.OrderByDescending(a => a.KilledOn).Select(x => $"#{x.Id} [{x.Alliance}] {x.Victim} Killed By {x.KilledBy} on {x.KilledOn.ToString("dd/MM HH:mm")} ({x.Power.ToString("N0")}) [Img]({x.ImageLink})").ToList();
-            
-            return EmbedPaginator.Paginate(dataRows,title,"Confirmed Kills",footer);
-        }
-
-
-
+        
         private static EmbedBuilder BuildIndividualKillEmbed(KillDto killerStats)
         {
             var embed = new EmbedBuilder();
