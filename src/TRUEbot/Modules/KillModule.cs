@@ -195,9 +195,14 @@ namespace TRUEbot.Modules
         [UsedImplicitly]
         public Task TopKills() => TopKills(1);
 
+        
+        [Command("topkills"), Summary("Gets the the top killers")]
+        [UsedImplicitly]
+        public Task TopKills(int days) => TopKills(days, null);
+
         [Command("topkills"), Summary("Gets the stats for a killer")]
         [UsedImplicitly]
-        public async Task TopKills( int days)
+        public async Task TopKills( int days, string alliance)
         {
             try
             {
@@ -205,10 +210,10 @@ namespace TRUEbot.Modules
                 var toDate = DateTime.Now;
                 var fromDate = DateTime.Now.AddDays(-days);
 
-                var killerStats = await _killService.GetStatsForKillCountLeaderboard(10, fromDate, toDate);
+                var killerStats = await _killService.GetStatsForKillCountLeaderboard(10, fromDate, toDate, alliance);
                 if (killerStats.Any())
                 {
-                    var killerEmbed = BuildKillCountLeaderBoardEmbed(killerStats, days,10);
+                    var killerEmbed = BuildKillCountLeaderBoardEmbed(killerStats, days,10, alliance);
                     foreach (var embedBuilder in killerEmbed)
                     {
                         await ReplyAsync(embed: embedBuilder.Build());
@@ -306,9 +311,13 @@ namespace TRUEbot.Modules
 
      
       
-        private static List<EmbedBuilder> BuildKillCountLeaderBoardEmbed(List<LeaderboardDto> kills, int days, int leaderboardCount)
+        private static List<EmbedBuilder> BuildKillCountLeaderBoardEmbed(List<LeaderboardDto> kills, int days,
+            int leaderboardCount, string alliance)
         {
             var title = $"Top {leaderboardCount} Killers by Kill Count for the last {days} days";
+            if (alliance != null)
+                title += " VS " + alliance;
+
             var footer = $"{kills.Sum(a=>a.TotalKills)} kills. {kills.Sum(a=>a.TotalPower).ToString("N0")} power destroyed.";
 
             int index = 1;
