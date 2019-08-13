@@ -74,7 +74,7 @@ namespace TRUEbot
 
         private static async Task StartupMessage()
         {
-            await Task.Delay(2000);
+            await Task.Delay(5000);
             var guild = _discordClient.Guilds.FirstOrDefault();
 
             var channel = guild?.GetTextChannel(541376685183074314);
