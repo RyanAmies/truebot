@@ -18,7 +18,8 @@ namespace TRUEbot.Services
         Task<List<KillDto>> GetStatsForVictimAlliance(string allianceName, DateTime fromDate, DateTime toDate);
         Task<List<LeaderboardDto>> GetStatsForKillCountLeaderboard(int leaderboardCount, DateTime fromDate,
             DateTime toDate, string alliance);
-        Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate);
+        Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate,
+            DateTime toDate, string alliance);
         Task<KillDto> GetKillRecordById(int id);
         Task<DeleteKillResult> DeleteKillRecordById(int id);
         Task<SummaryStatsDto> GetSummaryStatsForKiller(string userUsername, string playerName);
@@ -138,11 +139,15 @@ namespace TRUEbot.Services
                 .Take(leaderboardCount)
                 .ToListAsync();
         }
-        public Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate, DateTime toDate)
+        public Task<List<LeaderboardDto>> GetStatsForPowderDestroyedLeaderboard(int leaderboardCount, DateTime fromDate,
+            DateTime toDate, string alliance)
         {
+            var normalised = alliance.Normalise();
+
             return _db.Kills
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
+                .Where(a => alliance == null || a.Player.NormalizedAlliance == normalised)
                 .GroupBy(a => new { a.KilledByNormalised, a.KilledBy })
                 .Select(a => new LeaderboardDto
                 {
