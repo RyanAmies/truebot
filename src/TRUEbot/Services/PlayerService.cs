@@ -168,7 +168,7 @@ namespace TRUEbot.Services
             {
                 var normalisedSystemName = location.Normalise();
 
-                system = await _db.Systems.FirstOrDefaultAsync(a => a.NormalizedName == normalisedSystemName);
+                system = await _db.Systems.SingleOrDefaultAsync(a => a.NormalizedName.StartsWith(normalisedSystemName));
                 if (system == null)
                     return UpdatePlayerResult.CantFindSystem;
             }
