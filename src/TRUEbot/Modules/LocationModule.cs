@@ -15,13 +15,14 @@ namespace TRUEbot.Modules
     [UsedImplicitly]
     public class LocationModule : ModuleBase
     {
+        private readonly ILocationService _locationService;
         private readonly IPlayerService _playerService;
 
-        public LocationModule(IPlayerService playerService)
+        public LocationModule(ILocationService locationService, IPlayerService playerService)
         {
+            _locationService = locationService;
             _playerService = playerService;
         }
-       
         [Command, Summary("Gets all players in the location")]
         [UsedImplicitly]
         public async Task Get(string location)
@@ -48,6 +49,66 @@ namespace TRUEbot.Modules
                 Log.Error(ex, "Failed getting players in location {name}", location);
             }
         }
+
+        [Command("add"), Summary("Add a system. Admin only feature")]
+        [UsedImplicitly]
+        [RequireUserPermission(GuildPermission.KickMembers)]
+        public async Task Add(string locationName, string faction, int level)
+        {
+            try
+            {
+                var deleteResult = await _locationService.AddLocation(locationName, faction, level);
+                switch (deleteResult)
+                {
+                    case LocationCreationResult.OK:
+                        await Context.AddConfirmation();
+
+                        break;
+                    case LocationCreationResult.Duplicate:
+                        await Context.AddRejection();
+                        await ReplyAsync($"Duplicate system");
+                        break;
+                    case LocationCreationResult.CantFindSystem:
+                        await Context.AddRejection();
+                        await ReplyAsync($"Could not find system");
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed adding system");
+            }
+        }
+
+
+        [Command("rename"), Summary("Renames a location. Admin only feature")]
+        [UsedImplicitly]
+        [RequireUserPermission(GuildPermission.KickMembers)]
+        public async Task Rename(string locationName, string newLocationName)
+        {
+            try
+            {
+                var deleteResult = await _locationService.RenameLocation(locationName, newLocationName);
+                if (deleteResult == LocationCreationResult.OK)
+                {
+                    await Context.AddConfirmation();
+                }
+                else
+                {
+                    await ReplyAsync($"Could not find system");
+
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed renaming system");
+            }
+        }
+
 
         private static List<EmbedBuilder> BuildEmbed(List<PlayerDto> players)
         {
