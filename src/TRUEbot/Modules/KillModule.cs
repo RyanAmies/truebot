@@ -191,16 +191,16 @@ namespace TRUEbot.Modules
             }
         }
 
-        [Command("topkills"), Summary("Gets the the top killers")]
+        [Command("topkills"), Alias("topkiller"), Summary("Gets the the top killers")]
         [UsedImplicitly]
         public Task TopKills() => TopKills(1);
 
         
-        [Command("topkills"), Summary("Gets the the top killers")]
+        [Command("topkills"), Alias("topkiller"), Summary("Gets the the top killers")]
         [UsedImplicitly]
         public Task TopKills(int days) => TopKills(days, null);
 
-        [Command("topkills"), Summary("Gets the stats for a killer")]
+        [Command("topkills"), Alias("topkiller"), Summary("Gets the stats for a killer")]
         [UsedImplicitly]
         public async Task TopKills( int days, string alliance)
         {
