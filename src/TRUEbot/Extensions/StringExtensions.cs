@@ -13,6 +13,8 @@
 
         public static string Normalise(this string text)
         {
+            if (text == null)
+                return null;
             return text.UnifyApostrophe().ToUpper();
         }
 
