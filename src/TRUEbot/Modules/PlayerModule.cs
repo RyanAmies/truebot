@@ -296,9 +296,21 @@ namespace TRUEbot.Modules
 
             if (player.SystemLogs.Any())
             {
-                var locationLogs = player.SystemLogs.OrderByDescending(a=>a.DateUpdated).Take(5).Select(s =>
-                        $"{s.SystemName} ({s.SystemLevel}) - {s.SystemFaction} on {s.DateUpdated:dd/MM/yy HH:mm}"+Environment.NewLine).ToList();
-                embed.AddField("Previous Locations", string.Join("",locationLogs));
+                var logText = string.Empty;
+                foreach (var s in player.SystemLogs.OrderByDescending(a=>a.DateUpdated).Take(5))
+                {
+                    if (s.SystemName != null)
+                    {
+                        logText += $"{s.SystemName} ({s.SystemLevel}) - {s.SystemFaction} on {s.DateUpdated:dd/MM/yy HH:mm}"+Environment.NewLine;
+                    }
+                    else
+                    {
+                        logText += $"Missing on {s.DateUpdated:dd/MM/yy HH:mm}"+Environment.NewLine;
+
+                    }
+                }
+                
+                embed.AddField("Previous Locations", string.Join("",logText));
 
             }
 

@@ -248,15 +248,13 @@ namespace TRUEbot.Services
                 player.NormalizedAlliance = alliance.Normalise();
             }
 
-            if (system != player.System && system != null)
-            {
                 player.SystemLogs.Add(new SystemLog
                 {
                     Player = player,
                     System = system,
                     DateUpdated = DateTime.Now
                 });
-            }
+          
 
             player.System = system;
 
@@ -282,9 +280,9 @@ namespace TRUEbot.Services
                     SystemLogs = x.SystemLogs.Select(s=>new SystemLogDto
                     {
                         DateUpdated = s.DateUpdated,
-                        SystemName = s.System.Name,
-                        SystemFaction = s.System.Faction,
-                        SystemLevel = s.System.Level,
+                        SystemName = s.SystemId != null ? s.System.Name : null,
+                        SystemFaction = s.SystemId != null ? s.System.Faction : null,
+                        SystemLevel = s.SystemId != null ? s.System.Level : (int?) null,
                     }).ToList()
                 }).FirstOrDefaultAsync();
         }
@@ -333,7 +331,7 @@ namespace TRUEbot.Services
         public DateTime DateUpdated { get; set; }
         public string SystemFaction { get; set; }
         public string SystemName { get; set; }
-        public int SystemLevel { get; set; }
+        public int? SystemLevel { get; set; }
     }
 
     public enum PlayerCreationResult
