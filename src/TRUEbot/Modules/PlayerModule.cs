@@ -296,7 +296,7 @@ namespace TRUEbot.Modules
 
             if (player.SystemLogs.Any())
             {
-                var locationLogs = player.SystemLogs.Take(5).OrderByDescending(a=>a.DateUpdated).Select(s =>
+                var locationLogs = player.SystemLogs.OrderByDescending(a=>a.DateUpdated).Take(5).Select(s =>
                         $"{s.SystemName} ({s.SystemLevel}) - {s.SystemFaction} on {s.DateUpdated:dd/MM/yy HH:mm}"+Environment.NewLine).ToList();
                 embed.AddField("Previous Locations", string.Join("",locationLogs));
 
