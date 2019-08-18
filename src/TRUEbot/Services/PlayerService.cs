@@ -308,6 +308,24 @@ namespace TRUEbot.Services
 
         public async Task<List<PlayerDto>> GetPlayersInLocation(string location)
         {
+            if (location == null)
+            {
+
+                return await _db.Players
+                    .Where(x => x.System == null)
+                    .Select(x => new PlayerDto
+                    {
+                        Name = x.Name,
+                        PlayerLevel = x.Level,
+                        Location = x.SystemId != null ? x.System.Name : null,
+                        LocationFaction = x.SystemId != null ? x.System.Faction : null,
+                        LocationLevel = x.SystemId != null ? x.System.Level : (int?)null,
+                        Alliance = x.Alliance,
+                        AddedDate = x.AddedDate,
+                        UpdatedDate = x.UpdatedDate,
+                    }).ToListAsync();
+            }
+
             var normalized = location.Normalise();
 
             return await _db.Players

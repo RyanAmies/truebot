@@ -29,6 +29,9 @@ namespace TRUEbot.Modules
         {
             try
             {
+                if (location.ToLowerInvariant() == "missing")
+                    location = null;
+
                 var players = await _playerService.GetPlayersInLocation(location);
 
                 if (!players.Any())
@@ -119,7 +122,10 @@ namespace TRUEbot.Modules
             var locationName = players.First().Location;
             var locationFaction = players.First().LocationFaction;
             var locationLevel = players.First().LocationLevel;
-
+            
+            var title = $"Players in {locationName} ({locationLevel}) - {locationFaction} Page ";
+            if (locationName == null)
+                title = $"Players with no location Page ";
 
             foreach (var player in players.OrderBy(a => a.Alliance).ThenBy(a=>a.Name))
             {
@@ -132,7 +138,7 @@ namespace TRUEbot.Modules
                 if (pageText.Length + text.Length > LIMIT)
                 {
                     var embed = new EmbedBuilder()
-                        .WithTitle($"Players in {locationName} ({locationLevel}) - {locationFaction} Page ");
+                        .WithTitle(title);
 
                     embed.AddField("Players", pageText);
 
