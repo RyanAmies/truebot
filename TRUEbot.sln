@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TRUEbot.Bot", "src\TRUEbot.Bot\TRUEbot.Bot.csproj", "{CC0EE1E3-4B8C-4B5B-AE3F-3E31882B93ED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TRUEbot.Web", "src\TRUEbot.Web\TRUEbot.Web.csproj", "{F3F1B8E5-BF46-45E6-A245-377E7028FC3D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC0EE1E3-4B8C-4B5B-AE3F-3E31882B93ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC0EE1E3-4B8C-4B5B-AE3F-3E31882B93ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC0EE1E3-4B8C-4B5B-AE3F-3E31882B93ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC0EE1E3-4B8C-4B5B-AE3F-3E31882B93ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3F1B8E5-BF46-45E6-A245-377E7028FC3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3F1B8E5-BF46-45E6-A245-377E7028FC3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3F1B8E5-BF46-45E6-A245-377E7028FC3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3F1B8E5-BF46-45E6-A245-377E7028FC3D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FA425A1A-55BF-48C9-B111-0C1715CE8EDB}
+	EndGlobalSection
+EndGlobal
