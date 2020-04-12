@@ -46,6 +46,7 @@ namespace TRUEbot.Web
                                 restrictedToMinimumLevel: LogEventLevel.Information);
                         });
 
+                    webBuilder.UseIIS();
                     webBuilder.UseStartup<Startup>();
                 });
     }
