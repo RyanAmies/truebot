@@ -231,27 +231,12 @@ namespace TRUEbot.Bot.Modules
             return builders;
         }
 
-        //private static EmbedBuilder BuildEmbed(string location, List<PlayerDto> players)
-        //{
-        //    var embed = new EmbedBuilder()
-        //        .WithTitle(location);
-
-        //    var output = string.Join(Environment.NewLine, players.OrderBy(a => a.Name).Select(x => $"{x.Name} ({x.Alliance ?? "Unknown"})"));
-
-        //    embed.AddField("Players", output);
-
-        //    embed.WithFooter($"{players.Count} players").WithColor(new Color(95, 186, 125));
-
-        //    return embed;
-        //}
-
         private static List<EmbedBuilder> BuildEmbed(string username, List<PlayerDto> players)
         {
             const int LIMIT = 1020;
 
             var pageText = "";
             var builders = new List<EmbedBuilder>();
-            int index = 1;
 
             foreach (var x in players.OrderByDescending(a => a.Name))
             {

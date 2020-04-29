@@ -36,7 +36,7 @@ namespace TRUEbot.Bot.Services
             if (player == null)
                 return false;
 
-            var hit = await _db.Hits.Where(a => a.CompletedOn == null).FirstOrDefaultAsync(x => x.PlayerId == player.Id);
+            var hit = await _db.Hits.AsQueryable().Where(a => a.CompletedOn == null).FirstOrDefaultAsync(x => x.PlayerId == player.Id);
             if (hit != null)
                 return true;
 
@@ -58,7 +58,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalized = playerName.Normalise();
 
-            var hit = await _db.Hits.Where(a => a.CompletedOn == null).FirstOrDefaultAsync(x => x.Player.NormalizedName == normalized);
+            var hit = await _db.Hits.AsQueryable().Where(a => a.CompletedOn == null).FirstOrDefaultAsync(x => x.Player.NormalizedName == normalized);
             if (hit == null)
                 return false;
 
@@ -72,7 +72,7 @@ namespace TRUEbot.Bot.Services
 
         public async Task<List<HitDto>> GetOutstandingHits()
         {
-            var hits = await _db.Hits.Where(x => x.CompletedOn == null).Select(x => new HitDto
+            var hits = await _db.Hits.AsQueryable().Where(x => x.CompletedOn == null).Select(x => new HitDto
             {
                 Reason = x.Reason,
                 Name = x.Player.Name,
@@ -89,7 +89,7 @@ namespace TRUEbot.Bot.Services
 
         public async Task<List<HitDto>> GetHitsCompletedByUserAsync(string username)
         {
-            return await _db.Hits
+            return await _db.Hits.AsQueryable()
                 .Where(x => x.CompletedBy == username)
                 .Select(x => new HitDto
                 {

@@ -60,7 +60,7 @@ namespace TRUEbot.Bot.Services
             {
                 var systemName = location.Normalise();
 
-                system = await _db.Systems.FirstOrDefaultAsync(a => a.NormalizedName == systemName);
+                system = await _db.Systems.AsQueryable().FirstOrDefaultAsync(a => a.NormalizedName == systemName);
                 if (system == null)
                     return PlayerCreationResult.CantFindSystem;
             }
@@ -111,7 +111,7 @@ namespace TRUEbot.Bot.Services
 
         public async Task<List<PlayerDto>> GetAllPlayersAsync()
         {
-            return await _db.Players
+            return await _db.Players.AsQueryable()
                 .Select(x => new PlayerDto
                 {
                     Name = x.Name,
@@ -126,7 +126,7 @@ namespace TRUEbot.Bot.Services
 
         public async Task<bool> NormaliseSystemNames()
         {
-            var systems = await _db.Systems.ToListAsync();
+            var systems = await _db.Systems.AsQueryable().ToListAsync();
             foreach (var system in systems)
             {
                 system.NormalizedName = system.Name.Normalise();
@@ -168,7 +168,7 @@ namespace TRUEbot.Bot.Services
             {
                 var normalisedSystemName = location.Normalise();
 
-                system = await _db.Systems.SingleOrDefaultAsync(a => a.NormalizedName.StartsWith(normalisedSystemName));
+                system = await _db.Systems.AsQueryable().SingleOrDefaultAsync(a => a.NormalizedName.StartsWith(normalisedSystemName));
                 if (system == null)
                     return UpdatePlayerResult.CantFindSystem;
             }
@@ -216,7 +216,7 @@ namespace TRUEbot.Bot.Services
 
         public async Task<List<PlayerDto>> GetPlayersReportedByUserAsync(string reportedBy)
         {
-            return await _db.Players
+            return await _db.Players.AsQueryable()
                 .Where(x => x.AddedBy == reportedBy)
                 .Select(x => new PlayerDto
                 {
@@ -265,7 +265,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalized = playerName.UnifyApostrophe().ToUpper();
 
-            return await _db.Players
+            return await _db.Players.AsQueryable()
                 .Where(x => x.NormalizedName.Contains(normalized))
                 .Select(x => new PlayerDto
                 {
@@ -291,7 +291,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalized = alliance.Normalise();
 
-            return await _db.Players
+            return await _db.Players.AsQueryable()
                 .Where(x => x.NormalizedAlliance==normalized)
                 .Select(x => new PlayerDto
                 {
@@ -311,7 +311,7 @@ namespace TRUEbot.Bot.Services
             if (location == null)
             {
 
-                return await _db.Players
+                return await _db.Players.AsQueryable()
                     .Where(x => x.System == null)
                     .Select(x => new PlayerDto
                     {
@@ -328,7 +328,7 @@ namespace TRUEbot.Bot.Services
 
             var normalized = location.Normalise();
 
-            return await _db.Players
+            return await _db.Players.AsQueryable()
                 .Where(x => x.System.NormalizedName.Contains(normalized))
                 .Select(x => new PlayerDto
                 {

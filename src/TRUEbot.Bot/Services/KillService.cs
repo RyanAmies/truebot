@@ -39,7 +39,7 @@ namespace TRUEbot.Bot.Services
             var normalizedPlayerName = playerName.Normalise();
             var normalizedUsername = userUsername.Normalise();
 
-            var player = await _db.Players.FirstOrDefaultAsync(x => x.NormalizedName == normalizedPlayerName);
+            var player = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(_db.Players, x => x.NormalizedName == normalizedPlayerName);
 
             if (player == null)
                 return KillLogResult.CannotFindPlayer;
@@ -63,7 +63,8 @@ namespace TRUEbot.Bot.Services
         {
             var normalizedUsername = userUsername.Normalise();
 
-            return _db.Kills
+            return 
+                _db.Kills.AsQueryable()
                 .Where(a => a.KilledByNormalised == normalizedUsername)
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
@@ -83,7 +84,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalised = playerName.Normalise();
 
-            return _db.Kills
+            return _db.Kills.AsQueryable()
                 .Where(a => a.Player.NormalizedName == normalised)
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
@@ -103,7 +104,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalised = allianceName.Normalise();
 
-            return _db.Kills
+            return _db.Kills.AsQueryable()
                 .Where(a => a.Player.NormalizedAlliance == normalised)
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
@@ -124,7 +125,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalised = alliance.Normalise();
 
-            return _db.Kills
+            return _db.Kills.AsQueryable()
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
                 .Where(a => alliance == null || a.Player.NormalizedAlliance == normalised)
@@ -144,7 +145,7 @@ namespace TRUEbot.Bot.Services
         {
             var normalised = alliance.Normalise();
 
-            return _db.Kills
+            return _db.Kills.AsQueryable()
                 .Where(a => a.KilledOn >= fromDate)
                 .Where(a => a.KilledOn < toDate)
                 .Where(a => alliance == null || a.Player.NormalizedAlliance == normalised)
@@ -161,7 +162,7 @@ namespace TRUEbot.Bot.Services
 
         public Task<KillDto> GetKillRecordById(int id)
         {
-            return _db.Kills
+            return _db.Kills.AsQueryable()
                 .Where(a => a.Id == id)
                 .Select(a => new KillDto
                 {
@@ -178,6 +179,7 @@ namespace TRUEbot.Bot.Services
         public async Task<DeleteKillResult> DeleteKillRecordById(int id)
         {
             var kill = await _db.Kills
+                .AsQueryable()
                 .Where(a => a.Id == id)
                 .SingleOrDefaultAsync();
 
@@ -198,6 +200,7 @@ namespace TRUEbot.Bot.Services
             var yesterday = DateTime.Now.AddDays(-1);
 
             var dto =await  _db.Kills
+                .AsQueryable()
                 .Where(a=>a.KilledByNormalised == normalisedUser)
                 .GroupBy(a=>a.KilledBy)
                 .Select(a => new SummaryStatsDto
@@ -210,42 +213,42 @@ namespace TRUEbot.Bot.Services
                     
                 }).SingleAsync();
 
-            var player =await  _db.Players.Where(a => a.NormalizedName == normalisedPlayer).SingleAsync();
-            dto.VictimKills24Hours = await _db.Kills
+            var player =await  _db.Players.AsQueryable().Where(a => a.NormalizedName == normalisedPlayer).SingleAsync();
+            dto.VictimKills24Hours = await _db.Kills.AsQueryable()
                 .Where(a => a.Player == player)
                 .Where(a => a.KilledOn >= yesterday)
                 .CountAsync();
-            dto.VictimPower24Hours = await _db.Kills
+            dto.VictimPower24Hours = await _db.Kills.AsQueryable()
                 .Where(a => a.Player == player)
                 .Where(a => a.KilledOn >= yesterday)
                 .Select(a=>a.Power).SumAsync();
 
-            dto.VictimKillsAllTime = await _db.Kills
+            dto.VictimKillsAllTime = await _db.Kills.AsQueryable()
                 .Where(a => a.Player == player)
                 .CountAsync();
-            dto.VictimPowerAllTime = await _db.Kills
+            dto.VictimPowerAllTime = await _db.Kills.AsQueryable()
                 .Where(a => a.Player == player)
                 .Select(a=>a.Power).SumAsync();
 
-            dto.VictimAllianceKills24Hours = await _db.Kills
+            dto.VictimAllianceKills24Hours = await _db.Kills.AsQueryable()
                 .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
                 .Where(a => a.KilledOn >= yesterday)
                 .CountAsync();
-            dto.VictimAlliancePower24Hours = await _db.Kills
+            dto.VictimAlliancePower24Hours = await _db.Kills.AsQueryable()
                 .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
                 .Where(a => a.KilledOn >= yesterday)
                 .Select(a=>a.Power).SumAsync();
 
-            dto.VictimAllianceKillsAllTime = await _db.Kills
+            dto.VictimAllianceKillsAllTime = await _db.Kills.AsQueryable()
                 .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
                 .CountAsync();
-            dto.VictimAlliancePowerAllTime = await _db.Kills
+            dto.VictimAlliancePowerAllTime = await _db.Kills.AsQueryable()
                 .Where(a => a.Player.NormalizedAlliance == player.NormalizedAlliance)
                 .Select(a=>a.Power).SumAsync();
 
             dto.VictimAllianceName = player.Alliance;
 
-            dto.LastKillId = await _db.Kills.Where(a => a.KilledByNormalised == normalisedUser)
+            dto.LastKillId = await _db.Kills.AsQueryable().Where(a => a.KilledByNormalised == normalisedUser)
                 .OrderByDescending(a => a.KilledOn).Select(a => a.Id).FirstAsync();
             return dto;
         }
